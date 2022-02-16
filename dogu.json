@@ -1,0 +1,116 @@
+{
+  "Name": "official/nginx",
+  "Version": "1.21.5-2",
+  "DisplayName": "Nginx",
+  "Description": "Nginx WebServer.",
+  "Logo": "https://cloudogu.com/images/dogus/nginx.png",
+  "Category": "Base",
+  "Tags": [
+    "webserver",
+    "proxy",
+    "reverse-proxy"
+  ],
+  "Url": "http://nginx.org/",
+  "Image": "registry.cloudogu.com/official/nginx",
+  "Dependencies": [
+    {
+      "type": "dogu",
+      "name": "registrator"
+    }
+  ],
+  "Configuration": [
+    {
+      "Name": "logging/root",
+      "Description": "Set the root log level to one of ERROR, WARN, INFO, DEBUG.",
+      "Optional": true,
+      "Default": "WARN",
+      "Validation": {
+        "Type": "ONE_OF",
+        "Values": [
+          "WARN",
+          "DEBUG",
+          "INFO",
+          "ERROR"
+        ]
+      }
+    },
+    {
+      "Name": "disable_access_log",
+      "Description": "Disable logging of incoming requests",
+      "Optional": true
+    },
+    {
+      "Name": "google_tracking_id",
+      "Description": "Google Analytics Tracking ID",
+      "Optional": true
+    },
+    {
+      "Name": "html_content_url",
+      "Description": "URL path to reach all custom html content pages. Default value when unset: static",
+      "Optional": true
+    },
+    {
+      "Name": "ignore_service_health",
+      "Description": "Option to ignore the health status of all dogus. Makes it possible to access dogus even if they are unhealthy",
+      "Default": "false",
+      "Optional": true
+    },
+    {
+      "Name": "container_config/memory_limit",
+      "Description": "Limits the container's memory usage. Use a positive integer value followed by one of these units [b,k,m,g] (byte, kibibyte, mebibyte, gibibyte). We recommend to have at least allocated 20m for additional tools (ces-confd) running inside the container.",
+      "Optional": true,
+      "Validation": {
+        "Type": "BINARY_MEASUREMENT"
+      }
+    },
+    {
+      "Name": "container_config/swap_limit",
+      "Description": "Limits the container's swap memory usage. Use zero or a positive integer value followed by one of these units [b,k,m,g] (byte, kibibyte, mebibyte, gibibyte). 0 will disable swapping.",
+      "Optional": true,
+      "Validation": {
+        "Type": "BINARY_MEASUREMENT"
+      }
+    }
+  ],
+  "Volumes": [
+    {
+      "Name": "customhtml",
+      "Path": "/var/www/customhtml",
+      "Owner": "1000",
+      "Group": "1000",
+      "NeedsBackup": true
+    },
+    {
+      "Name": "app.conf.d",
+      "Path": "/etc/nginx/app.conf.d",
+      "Owner": "1000",
+      "Group": "1000",
+      "NeedsBackup": true
+    }
+  ],
+  "ExposedPorts": [
+    {
+      "Type": "tcp",
+      "Host": 80,
+      "Container": 80
+    },
+    {
+      "Type": "tcp",
+      "Host": 443,
+      "Container": 443
+    }
+  ],
+  "HealthChecks": [
+    {
+      "Type": "tcp",
+      "Port": 80
+    },
+    {
+      "Type": "tcp",
+      "Port": 443
+    }
+  ],
+  "Properties": {
+    "stopAtBackup": "false"
+  }
+}
