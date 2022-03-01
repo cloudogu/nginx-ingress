@@ -37,13 +37,14 @@ RUN curl -Lsk https://github.com/cloudogu/ces-theme/archive/${CES_THEME_VERSION}
  && mv /tmp/theme/ces-theme-*/dist/errors/* /var/www/html/errors \
  && rm -rf /tmp/theme.zip /tmp/theme
 
-# inject custom config into template
-RUN sed -i 's/{{ if not (empty $server.ServerSnippet) }}//g'
 # copy files
 COPY resources /
 
+# inject custom config into template
+RUN /injectNginxConfig.sh
+
 # adjust permissions
-RUN chown -R -v "${INGRESS_USER}:${INGRESS_USER}" /var/www
+RUN chown -R "${INGRESS_USER}:${INGRESS_USER}" /var/www
 
 USER "${INGRESS_USER}"
 
