@@ -16,9 +16,10 @@ k3ces:
 	cd ${K3CES} && vagrant ssh worker-0 -- -t "sudo k3s ctr images import /vagrant/image.tar"
 	cd ${K3CES} && vagrant ssh worker-1 -- -t "sudo k3s ctr images import /vagrant/image.tar"
 	rm ${K3CES}/image.tar
-	yq -y '(.spec.template.spec.containers[]|select(.name == "controller").image)|="${DEV_IMAGE}"' nginx-deployment.yaml > nginx-deployment-dev.yaml
-	kubectl apply -f nginx-deployment-dev.yaml
-	rm -f nginx-deployment-dev.yaml
+	yq e "(.spec.template.spec.containers[]|select(.name == \"controller\").image)=\"${DEV_IMAGE}\"" k8s/nginx-deployment.yaml.tpl > k8s/nginx-deployment-dev.yaml
+	kubectl delete -f k8s
+	kubectl apply -f k8s
+	rm -f k8s/nginx-deployment-dev.yaml
 
 
 
