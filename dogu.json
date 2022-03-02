@@ -111,6 +111,7 @@
     }
   ],
   "Properties": {
-    "stopAtBackup": "false"
+    "stopAtBackup": "false",
+    "k8s-resources": "http://"
   }
 }

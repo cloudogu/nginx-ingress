@@ -3,6 +3,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
+    dogu: nginx-ingress
     helm.sh/chart: ingress-nginx-4.0.17
     app.kubernetes.io/name: ingress-nginx
     app.kubernetes.io/instance: ingress-nginx
@@ -18,9 +19,6 @@ spec:
       app.kubernetes.io/name: ingress-nginx
       app.kubernetes.io/instance: ingress-nginx
       app.kubernetes.io/component: controller
-  replicas: 1
-  revisionHistoryLimit: 10
-  minReadySeconds: 0
   template:
     metadata:
       labels:
@@ -28,16 +26,16 @@ spec:
         app.kubernetes.io/instance: ingress-nginx
         app.kubernetes.io/component: controller
     spec:
-      dnsPolicy: ClusterFirst
       containers:
         - name: controller
           image: "registry.cloudogu.com/official/nginx-ingress:1.1.1-0"
-          imagePullPolicy: IfNotPresent
+          # kubectl explain Deployment.spec.template.spec.containers.lifecycle
           lifecycle:
             preStop:
               exec:
                 command:
                   - /wait-shutdown
+          # can be replaced with a startup. The startup is responsible to start our controller and the ingress-controller with the correct arguments
           args:
             - /nginx-ingress-controller
             - --publish-service=$(POD_NAMESPACE)/ingress-nginx-controller
@@ -56,7 +54,6 @@ spec:
                 - ALL
               add:
                 - NET_BIND_SERVICE
-            runAsUser: 101
             allowPrivilegeEscalation: true
           env:
             - name: POD_NAME
@@ -99,10 +96,6 @@ spec:
             - name: webhook
               containerPort: 8443
               protocol: TCP
-#          volumeMounts:
-#            - mountPath: /var/www/warp/menu.json
-#              name: nginx-var-www-menu-json
-#              subPath: menu.json
           resources:
             requests:
               cpu: 100m
@@ -111,7 +104,3 @@ spec:
         kubernetes.io/os: linux
       serviceAccountName: ingress-nginx
       terminationGracePeriodSeconds: 300
-#      volumes:
-#        - configMap:
-#            name: nginx-var-www-menu-json
-#          name: nginx-var-www-menu-json
