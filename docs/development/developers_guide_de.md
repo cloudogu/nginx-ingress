@@ -1,25 +1,25 @@
-# Developers Guide
+# Leitfaden für Entwickler
 
-This documentation contains all information required for developing the Nginx-Ingress Dogu.
+Diese Dokumentation enthält alle Informationen, die für die Entwicklung des Nginx-Ingress Dogu erforderlich sind.
 
-## Prerequisites
+## Voraussetzungen
 
-1. A running K8s-EcoSystem is required to develop the Nginx-Ingress Dogu. For more information about the
-setup of the K8s-EcoSystem see …(TODO add link to K8s-EcoSystem setup)
+1. Ein laufendes K8s-EcoSystem ist erforderlich, um den Nginx-Ingress Dogu zu entwickeln. Für weitere Informationen über die
+   Einrichtung des K8s-EcoSystems siehe ...(TODO Link zur K8s-EcoSystem Einrichtung hinzufügen)
 
-1. An SSL certificate should be available in the K8s-EcoSystem. This should be accessible as a secret named
-`ecosystem/ecosystem-certificate` in the K8s-EcoSystem.
+1. Ein SSL-Zertifikat sollte im K8s-EcoSystem vorhanden sein. Dieses sollte als ein Geheimnis namens
+   `ecosystem/ecosystem-certificate` im K8s-EcoSystem zugänglich sein.
 
-## Overview of Available Make Targets
+## Übersicht über die verfügbaren Make-Targets
 
-This project provides a make target named `help` to print all available targets and their description.
+Dieses Projekt stellt ein Make-Target namens `help` zur Verfügung, das alle verfügbaren Targets und deren Beschreibung ausgibt.
 
-## Building and Deploying the Dogu
+## Bauen und Bereitstellen der Dogu
 
-The Makefile contains a target `k3ces` which does the following:
+Das Makefile enthält ein Ziel `k3ces`, das folgendes tut:
 
-1. Builds the Dogu image.
-1. Imports the image into all K8s-EcoSystem Nodes.
-1. Applies all K8s resources from the `k8s` folder including a Deployment and Service for the Dogu.
+1. Erzeugt das Dogu-Image.
+1. Importiert das Image in alle K8s-EcoSystem-Knoten.
+1. Wendet alle K8s-Ressourcen aus dem Ordner "k8s" an, einschließlich eines Deployments und eines Dienstes für die Dogu.
 
-The K8s-EcoSystem should now automatically start a pod for the dogu. 
+Das K8s-EcoSystem sollte nun automatisch einen Pod für die Dogu starten.

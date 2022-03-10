@@ -1,21 +1,26 @@
 {
-  "Name": "official/nginx",
-  "Version": "1.21.5-2",
-  "DisplayName": "Nginx",
-  "Description": "Nginx WebServer.",
+  "Name": "k8s/nginx-ingress",
+  "Version": "1.1.2-1",
+  "DisplayName": "Nginx Ingress",
+  "Description": "Nginx WebServer with Ingress Controller.",
   "Logo": "https://cloudogu.com/images/dogus/nginx.png",
   "Category": "Base",
   "Tags": [
     "webserver",
     "proxy",
-    "reverse-proxy"
+    "reverse-proxy",
+    "k8s"
   ],
-  "Url": "http://nginx.org/",
-  "Image": "registry.cloudogu.com/official/nginx",
+  "Url": "https://kubernetes.github.io/ingress-nginx/",
+  "Image": "registry.cloudogu.com/k8s/nginx-ingress",
   "Dependencies": [
     {
       "type": "dogu",
       "name": "registrator"
+    },
+    {
+      "type": "client",
+      "name": "k8s-dogu-operator"
     }
   ],
   "Configuration": [
@@ -111,7 +116,6 @@
     }
   ],
   "Properties": {
-    "stopAtBackup": "false",
-    "k8s-resources": "http://"
+    "stopAtBackup": "false"
   }
 }

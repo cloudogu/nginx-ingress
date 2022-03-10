@@ -1,7 +1,7 @@
-FROM k8s.gcr.io/ingress-nginx/controller:v1.1.1@sha256:0bc88eb15f9e7f84e8e56c14fa5735aaa488b840983f87bd79b1054190e660de
+FROM k8s.gcr.io/ingress-nginx/controller:v1.1.2@sha256:28b11ce69e57843de44e3db6413e98d09de0f6688e33d4bd384002a44f78405c
 LABEL maintainer="hello@cloudogu.com" \
       NAME="official/nginx-ingress" \
-      VERSION="1.1.1-1"
+      VERSION="1.1.2-1"
 
 ENV WARP_MENU_VERSION=1.3.0 \
     WARP_MENU_TAR_SHA256="f1ebc305ac03a2b59d8eb9b5624a26a3e5803bb8b6969df271c702bdb257792c" \
@@ -39,6 +39,7 @@ RUN curl -Lsk https://github.com/cloudogu/ces-theme/archive/${CES_THEME_VERSION}
 
 # copy files
 COPY resources /
+COPY k8s /k8s
 
 # inject custom config into template
 RUN /injectNginxConfig.sh
@@ -62,3 +63,6 @@ HEALTHCHECK CMD doguctl healthy nginx || exit 1
 # Expose ports.
 EXPOSE 80
 EXPOSE 443
+
+# Define default command.
+ENTRYPOINT ["/startup.sh"]

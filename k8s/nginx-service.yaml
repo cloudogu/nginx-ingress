@@ -11,6 +11,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: controller
   name: ingress-nginx-controller
+  namespace: ecosystem
 spec:
   type: LoadBalancer
   ipFamilyPolicy: SingleStack
