@@ -16,10 +16,10 @@ Dieses Projekt stellt ein Make-Target namens `help` zur Verfügung, das alle ver
 
 ## Bauen und Bereitstellen der Dogu
 
-Das Makefile enthält ein Ziel `k3ces`, das folgendes tut:
+Das Makefile enthält ein Ziel `build`, das folgendes tut:
 
 1. Erzeugt das Dogu-Image.
 1. Importiert das Image in alle K8s-EcoSystem-Knoten.
 1. Wendet alle K8s-Ressourcen aus dem Ordner "k8s" an, einschließlich eines Deployments und eines Dienstes für die Dogu.
 
-Das K8s-EcoSystem sollte nun automatisch einen Pod für die Dogu starten.
+Das K8s-EcoSystem sollte nun automatisch einen Pod für das Dogu starten.
