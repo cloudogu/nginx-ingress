@@ -4,8 +4,6 @@
 apiVersion: networking.k8s.io/v1
 kind: IngressClass
 metadata:
-  name: nginx-ecosystem
-  labels:
-    dogu: nginx-ingress
+  name: k8s-ecosystem-ces-service
 spec:
   controller: k8s.io/ingress-nginx

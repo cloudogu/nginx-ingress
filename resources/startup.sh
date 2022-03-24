@@ -21,7 +21,7 @@ echo "[nginx] starting nginx service..."
   --publish-service="${POD_NAMESPACE}"/ingress-nginx-controller \
   --election-id=ingress-controller-leader \
   --controller-class=k8s.io/ingress-nginx \
-  --ingress-class=nginx-ecosystem \
+  --ingress-class=k8s-ecosystem-ces-service \
   --configmap="${POD_NAMESPACE}"/ingress-nginx-controller \
   --validating-webhook=:8443 \
   --validating-webhook-certificate=/usr/local/certificates/cert \
