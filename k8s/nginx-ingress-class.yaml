@@ -1,9 +1,0 @@
-# Für die Beschränkung des Nginx Ingress auf ein Namespace muss der Namespace und eine neue Ingress-Klasse angelegt werden.
-# Wenn keine neue Klasse erstellt wird verwaltet der Ningx-Ingress alle IngressObjekte. Ggf auch welche, die nicht zu
-# dem Nginx-ingress gehören. (low)
-apiVersion: networking.k8s.io/v1
-kind: IngressClass
-metadata:
-  name: k8s-ecosystem-ces-service
-spec:
-  controller: k8s.io/ingress-nginx
