@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Changed
+- Update make files to version 6.0.0
 - Update make files to version 5.1.0
 
 ### Added 
