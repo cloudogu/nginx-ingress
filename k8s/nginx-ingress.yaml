@@ -63,6 +63,9 @@ spec:
     spec:
       containers:
         - name: controller
+          volumeMounts:
+            - name: menu-json-volume
+              mountPath: /var/www/html/warp/menu
           image: "registry.cloudogu.com/k8s/nginx-ingress:1.1.2-1"
           lifecycle:
             preStop:
@@ -109,6 +112,10 @@ spec:
         kubernetes.io/os: linux
       serviceAccountName: ingress-nginx
       terminationGracePeriodSeconds: 300
+      volumes:
+        - name: menu-json-volume
+          configMap:
+            name: menu-json
 ---
 # Für die Beschränkung des Nginx Ingress auf ein Namespace muss der Namespace und eine neue Ingress-Klasse angelegt werden.
 # Wenn keine neue Klasse erstellt wird verwaltet der Ningx-Ingress alle IngressObjekte. Ggf auch welche, die nicht zu
@@ -266,3 +273,13 @@ metadata:
     app.kubernetes.io/component: controller
   name: ingress-nginx
 automountServiceAccountToken: true
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: menu-json
+data:
+  menu.json: |-
+    [
+      
+    ]
