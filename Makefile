@@ -2,7 +2,8 @@ MAKEFILES_VERSION=6.0.1
 ARTIFACT_ID=nginx-ingress
 
 .DEFAULT_GOAL:=help
-K8S_PRE_GENERATE_TARGETS=
+K8S_PRE_GENERATE_TARGETS=${K8S_RESOURCE_TEMP_YAML}
+
 include build/make/variables.mk
 include build/make/self-update.mk
 include build/make/release.mk
@@ -18,3 +19,7 @@ dogu-resource: ${K8S_RESOURCE_TEMP_YAML}
 
 ${K8S_RESOURCE_TEMP_YAML}: ${TARGET_DIR} ${K8S_RESOURCE_TEMP_FOLDER}
 	@sed "s|NAMESPACE|$(ARTIFACT_NAMESPACE)|g" $(K8S_RESOURCE_DOGU_CR_TEMPLATE_YAML) | sed "s|NAME|$(ARTIFACT_ID)|g"  | sed "s|VERSION|$(VERSION)|g" > $@
+
+.PHONY: clean-k8s
+clean-k8s:
+	@kubectl delete -f ${WORKDIR}/k8s/*.yaml || true

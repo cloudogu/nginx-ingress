@@ -151,4 +151,3 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: nginx-ingress
-    namespace: '{{ .Namespace }}'
