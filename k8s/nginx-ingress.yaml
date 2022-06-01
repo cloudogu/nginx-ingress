@@ -1,13 +1,13 @@
-# Source: ingress-nginx/templates/clusterrole.yaml
+# Source: nginx-ingress/templates/clusterrole.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   labels:
     dogu: nginx-ingress
-    app.kubernetes.io/name: ingress-nginx
-    app.kubernetes.io/instance: ingress-nginx
-    app.kubernetes.io/part-of: ingress-nginx
-  name: ingress-nginx
+    app.kubernetes.io/name: nginx-ingress
+    app.kubernetes.io/instance: nginx-ingress
+    app.kubernetes.io/part-of: nginx-ingress
+  name: nginx-ingress
 rules:
   - apiGroups:
       - networking.k8s.io
@@ -18,47 +18,47 @@ rules:
       - list
       - watch
 ---
-# Source: ingress-nginx/templates/clusterrolebinding.yaml
+# Source: nginx-ingress/templates/clusterrolebinding.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   labels:
     dogu: nginx-ingress
-    app.kubernetes.io/name: ingress-nginx
-    app.kubernetes.io/instance: ingress-nginx
-    app.kubernetes.io/part-of: ingress-nginx
-  name: ingress-nginx
+    app.kubernetes.io/name: nginx-ingress
+    app.kubernetes.io/instance: nginx-ingress
+    app.kubernetes.io/part-of: nginx-ingress
+  name: nginx-ingress
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: ingress-nginx
+  name: nginx-ingress
 subjects:
   - kind: ServiceAccount
-    name: ingress-nginx
+    name: nginx-ingress
     namespace: '{{ .Namespace }}'
 ---
-# Source: ingress-nginx/templates/controller-deployment.yaml
+# Source: nginx-ingress/templates/controller-deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
     dogu: nginx-ingress
-    app.kubernetes.io/name: ingress-nginx
-    app.kubernetes.io/instance: ingress-nginx
-    app.kubernetes.io/part-of: ingress-nginx
+    app.kubernetes.io/name: nginx-ingress
+    app.kubernetes.io/instance: nginx-ingress
+    app.kubernetes.io/part-of: nginx-ingress
     app.kubernetes.io/component: controller
-  name: ingress-nginx-controller
+  name: nginx-ingress-controller
 spec:
   selector:
     matchLabels:
-      app.kubernetes.io/name: ingress-nginx
-      app.kubernetes.io/instance: ingress-nginx
+      app.kubernetes.io/name: nginx-ingress
+      app.kubernetes.io/instance: nginx-ingress
       app.kubernetes.io/component: controller
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: ingress-nginx
-        app.kubernetes.io/instance: ingress-nginx
+        app.kubernetes.io/name: nginx-ingress
+        app.kubernetes.io/instance: nginx-ingress
         app.kubernetes.io/component: controller
     spec:
       containers:
@@ -110,7 +110,7 @@ spec:
               containerPort: 8443
       nodeSelector:
         kubernetes.io/os: linux
-      serviceAccountName: ingress-nginx
+      serviceAccountName: nginx-ingress
       terminationGracePeriodSeconds: 300
       volumes:
         - name: menu-json-volume
@@ -119,25 +119,25 @@ spec:
 ---
 # Für die Beschränkung des Nginx Ingress auf ein Namespace muss der Namespace und eine neue Ingress-Klasse angelegt werden.
 # Wenn keine neue Klasse erstellt wird verwaltet der Ningx-Ingress alle IngressObjekte. Ggf auch welche, die nicht zu
-# dem Nginx-ingress gehören. (low)
+# dem nginx-ingress gehören. (low)
 apiVersion: networking.k8s.io/v1
 kind: IngressClass
 metadata:
   name: k8s-ecosystem-ces-service
 spec:
-  controller: k8s.io/ingress-nginx
+  controller: k8s.io/nginx-ingress
 ---
-# Source: ingress-nginx/templates/controller-role.yaml
+# Source: nginx-ingress/templates/controller-role.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   labels:
     dogu: nginx-ingress
-    app.kubernetes.io/name: ingress-nginx
-    app.kubernetes.io/instance: ingress-nginx
-    app.kubernetes.io/part-of: ingress-nginx
+    app.kubernetes.io/name: nginx-ingress
+    app.kubernetes.io/instance: nginx-ingress
+    app.kubernetes.io/part-of: nginx-ingress
     app.kubernetes.io/component: controller
-  name: ingress-nginx
+  name: nginx-ingress
 # können wir die folgenden Regeln als ServiceAccount in der dogu.json abbilden?
 rules:
   - apiGroups:
@@ -210,24 +210,24 @@ rules:
       - create
       - patch
 ---
-# Source: ingress-nginx/templates/controller-rolebinding.yaml
+# Source: nginx-ingress/templates/controller-rolebinding.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   labels:
     dogu: nginx-ingress
-    app.kubernetes.io/name: ingress-nginx
-    app.kubernetes.io/instance: ingress-nginx
-    app.kubernetes.io/part-of: ingress-nginx
+    app.kubernetes.io/name: nginx-ingress
+    app.kubernetes.io/instance: nginx-ingress
+    app.kubernetes.io/part-of: nginx-ingress
     app.kubernetes.io/component: controller
-  name: ingress-nginx
+  name: nginx-ingress
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: ingress-nginx
+  name: nginx-ingress
 subjects:
   - kind: ServiceAccount
-    name: ingress-nginx
+    name: nginx-ingress
     namespace: '{{ .Namespace }}'
 ---
 apiVersion: v1
@@ -235,11 +235,11 @@ kind: Service
 metadata:
   labels:
     dogu: nginx-ingress
-    app.kubernetes.io/name: ingress-nginx
-    app.kubernetes.io/instance: ingress-nginx
-    app.kubernetes.io/part-of: ingress-nginx
+    app.kubernetes.io/name: nginx-ingress
+    app.kubernetes.io/instance: nginx-ingress
+    app.kubernetes.io/part-of: nginx-ingress
     app.kubernetes.io/component: controller
-  name: ingress-nginx-controller
+  name: nginx-ingress-controller
 spec:
   type: LoadBalancer
   ipFamilyPolicy: SingleStack
@@ -257,21 +257,21 @@ spec:
       targetPort: https
       appProtocol: https
   selector:
-    app.kubernetes.io/name: ingress-nginx
-    app.kubernetes.io/instance: ingress-nginx
+    app.kubernetes.io/name: nginx-ingress
+    app.kubernetes.io/instance: nginx-ingress
     app.kubernetes.io/component: controller
 ---
-# Source: ingress-nginx/templates/controller-serviceaccount.yaml
+# Source: nginx-ingress/templates/controller-serviceaccount.yaml
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   labels:
     dogu: nginx-ingress
-    app.kubernetes.io/name: ingress-nginx
-    app.kubernetes.io/instance: ingress-nginx
-    app.kubernetes.io/part-of: ingress-nginx
+    app.kubernetes.io/name: nginx-ingress
+    app.kubernetes.io/instance: nginx-ingress
+    app.kubernetes.io/part-of: nginx-ingress
     app.kubernetes.io/component: controller
-  name: ingress-nginx
+  name: nginx-ingress
 automountServiceAccountToken: true
 ---
 apiVersion: v1
