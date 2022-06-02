@@ -115,7 +115,7 @@ spec:
       volumes:
         - name: menu-json-volume
           configMap:
-            name: menu-json
+            name: k8s-ces-menu-json
 ---
 # Für die Beschränkung des Nginx Ingress auf ein Namespace muss der Namespace und eine neue Ingress-Klasse angelegt werden.
 # Wenn keine neue Klasse erstellt wird verwaltet der Ningx-Ingress alle IngressObjekte. Ggf auch welche, die nicht zu
@@ -277,7 +277,7 @@ automountServiceAccountToken: true
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: menu-json
+  name: k8s-ces-menu-json
 data:
   menu.json: |-
     [
