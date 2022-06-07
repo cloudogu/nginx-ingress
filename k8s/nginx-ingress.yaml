@@ -273,13 +273,3 @@ metadata:
     app.kubernetes.io/component: controller
   name: nginx-ingress
 automountServiceAccountToken: true
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: k8s-ces-menu-json
-data:
-  menu.json: |-
-    [
-      
-    ]
