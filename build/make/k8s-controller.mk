@@ -13,8 +13,7 @@
 #	@echo "Auto-generate deepcopy functions..."
 #	@$(CONTROLLER_GEN) object:headerFile="hack/boilerplate.go.txt" paths="./..."
 
-
-# This script required the k8s.mk script
+# This script requires the k8s.mk script
 include $(WORKDIR)/build/make/k8s.mk
 
 ## Variables
@@ -42,7 +41,7 @@ K8S_INTEGRATION_TEST_DIR=${TARGET_DIR}/k8s-integration-test
 ##@ K8s - EcoSystem
 
 .PHONY: build
-build: k8s-delete image-import k8s-apply ## Builds a new version of the dogu and deploys it into the K8s-EcoSystem.
+build: image-import k8s-apply ## Builds a new version of the dogu and deploys it into the K8s-EcoSystem.
 
 ##@ Release
 
@@ -69,12 +68,12 @@ $(K8S_INTEGRATION_TEST_DIR):
 
 .PHONY: k8s-integration-test
 k8s-integration-test: $(K8S_INTEGRATION_TEST_DIR) manifests generate vet envtest ## Run k8s integration tests.
-	@echo "Running k8s integration tests..."
+	@echo "Running K8s integration tests..."
 	@KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" go test -tags=k8s_integration ./... -coverprofile ${K8S_INTEGRATION_TEST_DIR}/report-k8s-integration.out
 
 ##@ K8s - Controller Resource
 
-# The pre generation script creates a k8s resource yaml containing generated manager yaml.
+# The pre generation script creates a K8s resource yaml containing generated manager yaml.
 .PHONY: k8s-create-temporary-resource
  k8s-create-temporary-resource: ${TARGET_DIR} manifests kustomize
 	@echo "Generating temporary k8s resources $(K8S_RESOURCE_TEMP_YAML)..."

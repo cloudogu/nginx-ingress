@@ -1,6 +1,7 @@
 # Makefiles
 .env
 target
+.bin
 
 
 # Created by https://www.toptal.com/developers/gitignore/api/linux,go,intellij+all
