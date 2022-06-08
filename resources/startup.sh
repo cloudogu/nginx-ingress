@@ -15,6 +15,10 @@ echo "                   V///   '°°°°      (/////)      °°°°'   ////  "
 echo "                    V/////(////////\. '°°°' ./////////(///(/'   "
 echo "                       'V/(/////////////////////////////V'      "
 
+# Replace /warp/menu.json with /warp/menu/menu.json
+# Menu.json gets mounted from a configmap so other files in /var/www/html/warp would be deleted.
+sed -i "s|/warp/menu.json|/warp/menu/menu.json|g" /var/www/html/warp/warp.js
+
 # Start nginx
 echo "[nginx] starting nginx service..."
 /nginx-ingress-controller \
