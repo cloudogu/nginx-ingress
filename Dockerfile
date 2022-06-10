@@ -1,4 +1,5 @@
-FROM k8s.gcr.io/ingress-nginx/controller:v1.1.2@sha256:28b11ce69e57843de44e3db6413e98d09de0f6688e33d4bd384002a44f78405c
+FROM k8s.gcr.io/ingress-nginx/controller:v1.1.2
+
 LABEL maintainer="hello@cloudogu.com" \
       NAME="k8s/nginx-ingress" \
       VERSION="1.1.2-1"
@@ -47,7 +48,7 @@ RUN /injectNginxConfig.sh
 # adjust permissions
 RUN chown -R "${INGRESS_USER}:${INGRESS_USER}" /var/www
 
-USER "${INGRESS_USER}"
+USER www-data
 
 # Volumes are used to avoid writing to containers writable layer https://docs.docker.com/storage/
 # Compared to the bind mounted volumes we declare in the dogu.json,
