@@ -29,7 +29,11 @@ node('docker') {
     timestamps {
         stage('Checkout') {
             checkout scm
-            make 'clean'
+            docker.image('mikefarah/yq:4.22.1')
+                    .mountJenkinsUser()
+                    .inside("--volume ${WORKSPACE}:/workdir -w /workdir") {
+                        make 'clean'
+                    }
         }
 
         stage('Lint') {
@@ -41,8 +45,12 @@ node('docker') {
         }
 
         stage('Generate k8s Resources') {
-            make 'k8s-create-temporary-resource'
-            archiveArtifacts 'target/*.yaml'
+            docker.image('mikefarah/yq:4.22.1')
+                    .mountJenkinsUser()
+                    .inside("--volume ${WORKSPACE}:/workdir -w /workdir") {
+                        make 'k8s-create-temporary-resource'
+                    }
+            archiveArtifacts 'target/make/k8s/*.yaml'
         }
 
         stage("Lint k8s Resources") {
@@ -104,7 +112,12 @@ node('docker') {
             }
 
             stage('Deploy Dogu') {
-                make('install-dogu-descriptor')
+                docker.image('mikefarah/yq:4.22.1')
+                        .mountJenkinsUser()
+                        .inside("--volume ${WORKSPACE}:/workdir -w /workdir") {
+                            make('install-dogu-descriptor')
+                        }
+
                 k3d.kubectl("apply -f ${sourceDeploymentYaml}")
             }
 
