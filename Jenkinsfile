@@ -37,7 +37,7 @@ node('docker') {
         }
 
         stage('Shellcheck') {
-            shellCheck('./resources/startup.sh ./injectNginxConfig.sh')
+            shellCheck('./resources/startup.sh ./resources/injectNginxConfig.sh')
         }
 
         stage('Generate k8s Resources') {
