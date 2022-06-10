@@ -29,11 +29,7 @@ node('docker') {
     timestamps {
         stage('Checkout') {
             checkout scm
-            docker.image('mikefarah/yq:4.22.1')
-                    .mountJenkinsUser()
-                    .inside("--volume ${WORKSPACE}:/workdir -w /workdir") {
-                        make 'clean'
-                    }
+            make 'clean'
         }
 
         stage('Lint') {
@@ -45,7 +41,7 @@ node('docker') {
         }
 
         stage('Generate k8s Resources') {
-            docker.image('mikefarah/yq:4.22.1')
+            docker.image('golang:1.18.1')
                     .mountJenkinsUser()
                     .inside("--volume ${WORKSPACE}:/workdir -w /workdir") {
                         make 'k8s-create-temporary-resource'
@@ -112,7 +108,7 @@ node('docker') {
             }
 
             stage('Deploy Dogu') {
-                docker.image('mikefarah/yq:4.22.1')
+                docker.image('golang:1.18.1')
                         .mountJenkinsUser()
                         .inside("--volume ${WORKSPACE}:/workdir -w /workdir") {
                             make('install-dogu-descriptor')
