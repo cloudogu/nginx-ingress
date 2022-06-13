@@ -49,14 +49,6 @@ node('docker') {
             archiveArtifacts 'target/make/k8s/*.yaml'
         }
 
-        stage("Lint k8s Resources") {
-            stageLintK8SResources()
-        }
-
-//        stage('SonarQube') {
-//            stageStaticAnalysisSonarQube()
-//        }
-
         K3d k3d = new K3d(this, "${WORKSPACE}/k3d", env.PATH)
 
         try {
@@ -75,16 +67,6 @@ node('docker') {
             GString sourceDeploymentYaml = "target/${repositoryName}.yaml"
 
             stage('Setup') {
-                // Secrets
-                // TODO Pick right secrets
-                withCredentials([usernamePassword(credentialsId: 'dogu.cloudogu.com', usernameVariable: 'USER', passwordVariable: 'PASS')]) {
-                    k3d.kubectl('generic k8s-dogu-operator-dogu-registry --from-literal=username="\$USER" --from-literal=password="\$PASS" --from-literal=endpoint="https://dogu.cloudogu.com/api/v2/dogus"')
-                }
-
-                withCredentials([usernamePassword(credentialsId: 'registry.cloudogu.com', usernameVariable: 'USER', passwordVariable: 'PASS')]) {
-                    k3d.kubectl('create secret docker-registry k8s-dogu-operator-docker-registry --docker-server=registry.cloudogu.com --docker-username="\$USER" --docker-email="test@test.de" --docker-password="\$PASS"')
-                }
-
                 // Config
                 writeSetupConfig()
                 k3d.kubectl('apply -f k8s-ces-setup-config.yaml')
@@ -139,60 +121,6 @@ void gitWithCredentials(String command) {
         )
     }
 }
-
-void stageLintK8SResources() {
-    String kubevalImage = "cytopia/kubeval:0.13"
-    Makefile makefile = new Makefile(this)
-    String controllerVersion = makefile.getVersion()
-
-    docker
-            .image(kubevalImage)
-            .inside("-v ${WORKSPACE}/target:/data -t --entrypoint=")
-                    {
-                        sh "kubeval /data/${repositoryName}_${controllerVersion}.yaml --ignore-missing-schemas"
-                    }
-}
-
-//void stageStaticAnalysisReviewDog() {
-//    def commitSha = sh(returnStdout: true, script: 'git rev-parse HEAD').trim()
-//
-//    withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'sonarqube-gh', usernameVariable: 'USERNAME', passwordVariable: 'REVIEWDOG_GITHUB_API_TOKEN']]) {
-//        withEnv(["CI_PULL_REQUEST=${env.CHANGE_ID}", "CI_COMMIT=${commitSha}", "CI_REPO_OWNER=${repositoryOwner}", "CI_REPO_NAME=${repositoryName}"]) {
-//            make 'static-analysis-ci'
-//        }
-//    }
-//}
-//
-//void stageStaticAnalysisSonarQube() {
-//    def scannerHome = tool name: 'sonar-scanner', type: 'hudson.plugins.sonar.SonarRunnerInstallation'
-//    withSonarQubeEnv {
-//        sh "git config 'remote.origin.fetch' '+refs/heads/*:refs/remotes/origin/*'"
-//        gitWithCredentials("fetch --all")
-//
-//        if (currentBranch == productionReleaseBranch) {
-//            echo "This branch has been detected as the production branch."
-//            sh "${scannerHome}/bin/sonar-scanner -Dsonar.branch.name=${env.BRANCH_NAME}"
-//        } else if (currentBranch == developmentBranch) {
-//            echo "This branch has been detected as the development branch."
-//            sh "${scannerHome}/bin/sonar-scanner -Dsonar.branch.name=${env.BRANCH_NAME}"
-//        } else if (env.CHANGE_TARGET) {
-//            echo "This branch has been detected as a pull request."
-//            sh "${scannerHome}/bin/sonar-scanner -Dsonar.pullrequest.key=${env.CHANGE_ID} -Dsonar.pullrequest.branch=${env.CHANGE_BRANCH} -Dsonar.pullrequest.base=${developmentBranch}"
-//        } else if (currentBranch.startsWith("feature/")) {
-//            echo "This branch has been detected as a feature branch."
-//            sh "${scannerHome}/bin/sonar-scanner -Dsonar.branch.name=${env.BRANCH_NAME}"
-//        } else {
-//            echo "This branch has been detected as a miscellaneous branch."
-//            sh "${scannerHome}/bin/sonar-scanner -Dsonar.branch.name=${env.BRANCH_NAME} "
-//        }
-//    }
-//    timeout(time: 2, unit: 'MINUTES') { // Needed when there is no webhook for example
-//        def qGate = waitForQualityGate()
-//        if (qGate.status != 'OK') {
-//            unstable("Pipeline unstable due to SonarQube quality gate failure")
-//        }
-//    }
-//}
 
 void stageAutomaticRelease() {
     if (gitflow.isReleaseBranch()) {
