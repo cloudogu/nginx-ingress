@@ -1,5 +1,6 @@
 MAKEFILES_VERSION=6.0.3
 ARTIFACT_ID=nginx-ingress
+VERSION=1.1.2-0
 
 .DEFAULT_GOAL:=help
 
