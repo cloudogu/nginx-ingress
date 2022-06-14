@@ -68,25 +68,33 @@ node('docker') {
 
             stage('Setup') {
                 // Config
-                writeSetupConfig()
+                writeSetupConfig(docker)
                 k3d.kubectl('apply -f k8s-ces-setup-config.yaml')
-
-                sleep(time: 300, unit: "SECONDS")
 
                 // No yaml released yet
                 // setupYaml = sh "curl -s https://api.github.com/repos/cloudogu/k8s-ces-setup/releases/latest | jq '.assets[] | select(.name|match(\"k8s-ces-setup_.*.yaml\")) | .browser_download_url'"
                 // k3d.kubectl('apply -f \${setupYaml}')
                 // Use this for test
                 writeSetupYaml()
+                writeSetupJson()
+                k3d.kubectl('create configmap k8s-ces-setup-json --from-file=setup.json')
                 k3d.kubectl('apply -f setup.yaml')
 
                 sleep(time: 5, unit: "SECONDS")
-                k3d.kubectl("wait --for=condition=ready pod -l app.kubernetes.io/name: k8s-ces-setup --timeout=300s")
+                def timeout = 60
+                for (int i = 0; i < timeout; i++) {
+                    sleep(time: 5, unit: "SECONDS")
+                    //k3d.kubectl("wait --for=condition=ready pod -l statefulset.kubernetes.io/pod-name=etcd-0 --timeout=300s")
+                    try {
+                        def statusMsg = sh(script: "sudo KUBECONFIG=${WORKSPACE}/k3d/.k3d/.kube/config kubectl rollout status deployment/k8s-dogu-operator-controller-manager", returnStdout: true)
+                        if (statusMsg.contains("successfully rolled out")) {
+                            break
+                        }
 
-                writeSetupJson()
-                k3d.kubectl('create configmap k8s-ces-setup-json --from-file=setup.json')
-
-                k3d.kubectl("wait --for=condition=ready pod -l statefulset.kubernetes.io/pod-name=etcd-0 --timeout=300s")
+                    } catch (exception) {
+                        // Ignore Error.
+                    }
+                }
             }
 
             stage('Deploy Dogu') {
@@ -178,16 +186,27 @@ void make(String makeArgs) {
 }
 
 // Select latest github asset release download
-private void writeSetupConfig() {
-    doguOperatorURL = sh "curl -s https://api.github.com/repos/cloudogu/k8s-service-discovery/releases/latest | jq '.assets[] | select(.name|match(\"k8s-dogu-operator_.*.yaml\")) | .browser_download_url'"
-    serviceDiscoveryURL = sh "curl -s https://api.github.com/repos/cloudogu/k8s-dogu-operator/releases/latest | jq '.assets[] | select(.name|match(\"k8s-service-discovery_.*.yaml\")) | .browser_download_url'"
+private void writeSetupConfig(Docker docker) {
+    doguOperatorReleases = sh(script: "curl -s https://api.github.com/repos/cloudogu/k8s-dogu-operator/releases/latest", returnStdout: true)
+    serviceDiscoveryReleases = sh(script: "curl -s https://api.github.com/repos/cloudogu/k8s-service-discovery/releases/latest", returnStdout: true)
 
-    script.writeFile file: 'k8s-ces-setup-config.yaml', text: """
+    sh "echo test"
+    sh "echo \"${doguOperatorReleases}\""
+
+    def doguOperatorURL
+    def serviceDiscoveryURL
+    docker.image('mikefarah/yq:4.22.1')
+            .mountJenkinsUser()
+            .inside("--volume ${WORKSPACE}:/workdir -w /workdir") {
+                doguOperatorURL = sh(script: "echo '${doguOperatorReleases}' | yq '.assets[] | select(.name|match(\"k8s-dogu-operator_.*.yaml\")) | .browser_download_url'", returnStdout: true).trim()
+                serviceDiscoveryURL = sh(script: "echo '${serviceDiscoveryReleases}' | yq '.assets[] | select(.name|match(\"k8s-service-discovery_.*.yaml\")) | .browser_download_url'", returnStdout: true).trim()
+            }
+
+    this.writeFile file: 'k8s-ces-setup-config.yaml', text: """
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: k8s-ces-setup-config
-  namespace: ecosystem
   labels:
     app: cloudogu-ecosystem
     app.kubernetes.io/name: k8s-ces-setup
@@ -204,7 +223,7 @@ data:
 }
 
 private void writeSetupJson() {
-    script.writeFile file: 'setup.json', text: """
+    this.writeFile file: 'setup.json', text: """
 {
   "naming": {
     "fqdn": "192.168.56.2",
@@ -216,13 +235,11 @@ private void writeSetupJson() {
     "internalIp": ""
   },
   "dogus": {
-    "defaultDogu": "postgresql",
+    "defaultDogu": "plantuml",
     "install": [
-      "official/ldap",
-      "official/postfix",
-      "official/cas"
+      "official/plantuml"
     ],
-    "completed": false
+    "completed": true
   },
   "admin": {
     "username": "admin",
@@ -263,7 +280,7 @@ private void writeSetupJson() {
 }
 // TODO Delete this method if the setup yaml will be available in github releases
 private void writeSetupYaml() {
-    script.writeFile file: 'setup.yaml', text: """
+    this.writeFile file: 'setup.yaml', text: """
 #
 # The service makes the setup available via port 30080. We should switch to a LoadBalancer if we figure out how to
 # solve out external IP assignment
@@ -307,7 +324,7 @@ spec:
     spec:
       containers:
         - name: k8s-ces-setup
-          image: "cloudogu/k8s-ces-setup:v0.6.0"
+          image: "cloudogu/k8s-ces-setup:0.6.0"
           env:
             - name: GIN_MODE
               value: release
@@ -411,10 +428,7 @@ rules:
       - clusterroles
       - clusterrolebindings
     verbs:
-      - create
-      - patch
-      - update
-      - delete
+      - "*"
   - apiGroups:
       - "*"
     resources:
@@ -495,7 +509,7 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: k8s-ces-setup
-    namespace: 'default'
+    namespace: default
 ---
 #
 # The cluster role binding binds our cluster role to our service account, and, thus, gives him all permission defined
@@ -515,99 +529,7 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: k8s-ces-setup
-    namespace: 'default'
+    namespace: default
 ---
----
-apiVersion: batch/v1
-kind: CronJob
-metadata:
-  name: k8s-ces-setup-finisher
-spec:
-  schedule: "* * * * *"
-  successfulJobsHistoryLimit: 0
-  failedJobsHistoryLimit: 1
-  jobTemplate:
-    spec:
-      template:
-        spec:
-          containers:
-            - name: kubectl-container
-              image: bitnami/kubectl:1.23.6
-              command:
-                - /bin/entrypoint.sh
-              volumeMounts:
-                - name: cleanup-script
-                  mountPath: /bin/entrypoint.sh
-                  readOnly: true
-                  subPath: entrypoint.sh
-          restartPolicy: Never
-          serviceAccountName: k8s-ces-setup-finisher
-          volumes:
-            - name: cleanup-script
-              configMap:
-                defaultMode: 0540
-                name: k8s-ces-setup-cleanup-script
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: k8s-ces-setup-cleanup-script
-data:
-  entrypoint.sh: "#!/bin/bash\\nSTATE=\$(kubectl get configmap k8s-setup-config -o jsonpath='{.data.state}');\\nif [[ ${STATE} == \\"installed\\" ]]; then \\n  kubectl delete configmap k8s-ces-setup-json || true\\n  kubectl delete configmap k8s-setup-config || true\\n  kubectl delete deployments,services,configmaps,secrets,roles,rolebindings,serviceaccounts -l app.kubernetes.io/name=k8s-ces-setup || true\\n  kubectl patch cronjob cleanup -p '{\\"spec\\" : {\\"suspend\\" : true }}'\\n  kubectl delete configmap k8s-ces-setup-cleanup-script\\n  kubectl delete cronjob k8s-ces-setup-finisher\\n  kubectl delete serviceaccount k8s-ces-setup-finisher\\n  kubectl delete rolebinding k8s-ces-setup-finisher\\nelse \\n  echo \\"setup seems not to be installed or successfully executed\\";\\nfi"
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
-  name: k8s-ces-setup-finisher
-  labels:
-    app: k8s-ces-setup-finisher
-    app.kubernetes.io/name: k8s-ces-setup-finisher
-rules:
-  - apiGroups:
-      - "*"
-    resources:
-      - configmaps
-      - services
-      - secrets
-      - deployments
-      - roles
-      - rolebindings
-      - serviceaccounts
-      - cronjobs
-    verbs:
-      - delete
-      - get
-      - list
-  - apiGroups:
-      - "*"
-    resources:
-      - cronjobs
-    verbs:
-      - patch
----
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: k8s-ces-setup-finisher
-  labels:
-    app: k8s-ces-setup-finisher
-    app.kubernetes.io/name: k8s-ces-setup-finisher
-automountServiceAccountToken: true
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  name: k8s-ces-setup-finisher
-  labels:
-    app: k8s-ces-setup-finisher
-    app.kubernetes.io/name: k8s-ces-setup-finisher
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: k8s-ces-setup-finisher
-subjects:
-  - kind: ServiceAccount
-    name: k8s-ces-setup-finisher
-
 """
 }
