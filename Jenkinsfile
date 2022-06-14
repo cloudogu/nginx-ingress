@@ -64,7 +64,7 @@ node('docker') {
                 imageName = k3d.buildAndPushToLocalRegistry("k8s/${repositoryName}", doguVersion)
             }
 
-            GString sourceDeploymentYaml = "target/${repositoryName}.yaml"
+            GString sourceDeploymentYaml = "target/make/k8s/${repositoryName}_${doguVersion}.yaml"
 
             stage('Setup') {
                 // Config
@@ -84,7 +84,6 @@ node('docker') {
                 def timeout = 60
                 for (int i = 0; i < timeout; i++) {
                     sleep(time: 5, unit: "SECONDS")
-                    //k3d.kubectl("wait --for=condition=ready pod -l statefulset.kubernetes.io/pod-name=etcd-0 --timeout=300s")
                     try {
                         def statusMsg = sh(script: "sudo KUBECONFIG=${WORKSPACE}/k3d/.k3d/.kube/config kubectl rollout status deployment/k8s-dogu-operator-controller-manager", returnStdout: true)
                         if (statusMsg.contains("successfully rolled out")) {
@@ -98,18 +97,27 @@ node('docker') {
             }
 
             stage('Deploy Dogu') {
-                docker.image('golang:1.18.1')
-                        .mountJenkinsUser()
-                        .inside("--volume ${WORKSPACE}:/workdir -w /workdir") {
-                            make('install-dogu-descriptor')
-                        }
-
+                // TODO Set this in build lib? Makefiles with kubectl causes problems
+                env.KUBECONFIG="${WORKSPACE}/k3d/.k3d/.kube/config"
+                make('install-dogu-descriptor-ci')
                 k3d.kubectl("apply -f ${sourceDeploymentYaml}")
             }
 
             stage('Wait for Ready Rollout') {
                 sleep(time: 5, unit: "SECONDS")
-                k3d.kubectl("--namespace default wait --for=condition=Ready pods --all")
+                def timeout = 60
+                for (int i = 0; i < timeout; i++) {
+                    sleep(time: 5, unit: "SECONDS")
+                    try {
+                        def statusMsg = sh(script: "sudo KUBECONFIG=${WORKSPACE}/k3d/.k3d/.kube/config kubectl rollout status deployment/nginx-ingress", returnStdout: true)
+                        if (statusMsg.contains("successfully rolled out")) {
+                            break
+                        }
+
+                    } catch (exception) {
+                        // Ignore Error.
+                    }
+                }
             }
 
             stageAutomaticRelease()
