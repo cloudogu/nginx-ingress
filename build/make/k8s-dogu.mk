@@ -13,8 +13,7 @@ VERSION=$(shell $(BINARY_YQ) -e ".Version" $(DOGU_JSON_FILE))
 # Image of the dogu is extracted from the dogu.json
 IMAGE=$(shell $(BINARY_YQ) -e ".Image" $(DOGU_JSON_FILE)):$(VERSION)
 IMAGE_DEV_WITHOUT_TAG=$(shell $(BINARY_YQ) -e ".Image" $(DOGU_JSON_FILE) | sed "s|registry\.cloudogu\.com\(.\+\)|${K3CES_REGISTRY_URL_PREFIX}\1|g")
-K3D_REGISTRY_URL_PREFIX=localhost:35441
-IMAGE_DEV_WITHOUT_TAG_CI=$(shell $(BINARY_YQ) -e ".Image" $(DOGU_JSON_FILE) | sed "s|registry\.cloudogu\.com\(.\+\)|${K3D_REGISTRY_URL_PREFIX}\1|g")
+IMAGE_DEV_WITHOUT_TAG_CI=$(shell $(BINARY_YQ) -e ".Image" $(DOGU_JSON_FILE) | sed "s|registry\.cloudogu\.com\(.\+\)|${K3D_REGISTRY_URL}\1|g")
 IMAGE_DEV=${IMAGE_DEV_WITHOUT_TAG}:${VERSION}
 IMAGE_DEV_CI=${IMAGE_DEV_WITHOUT_TAG_CI}
 

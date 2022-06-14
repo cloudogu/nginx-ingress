@@ -1,6 +1,6 @@
 #!groovy
 
-@Library(['github.com/cloudogu/dogu-build-lib@v1.6.0', 'github.com/cloudogu/ces-build-lib@1.53.0'])
+@Library(['github.com/cloudogu/dogu-build-lib@v1.6.0', 'github.com/cloudogu/ces-build-lib@927580cbe4c0dfb0ad1e7ff91cbc012547009151'])
 import com.cloudogu.ces.cesbuildlib.*
 import com.cloudogu.ces.dogubuildlib.*
 
@@ -99,7 +99,16 @@ node('docker') {
             stage('Deploy Dogu') {
                 // TODO Set this in build lib? Makefiles with kubectl causes problems
                 env.KUBECONFIG="${WORKSPACE}/k3d/.k3d/.kube/config"
-                make('install-dogu-descriptor-ci')
+                def dockerInspect = sh(script: "docker inspect k3d-${k3d.registryName}", returnStdout: true)
+                def registryIp
+
+                docker.image('mikefarah/yq:4.22.1')
+                        .mountJenkinsUser()
+                        .inside("--volume ${WORKSPACE}:/workdir -w /workdir") {
+                            registryIp = sh(script: "echo '${dockerInspect}' | yq '.[].NetworkSettings.Networks.k3d-${k3d.registryName}.IPAddress'", returnStdout: true).trim()
+                        }
+
+                make("install-dogu-descriptor-ci K3D_REGISTRY_URL=${registryIp}:5000")
                 k3d.kubectl("apply -f ${sourceDeploymentYaml}")
             }
 
@@ -119,6 +128,8 @@ node('docker') {
                     }
                 }
             }
+
+            sleep(time: 5, unit: "MINUTES")
 
             stageAutomaticRelease()
         } finally {
