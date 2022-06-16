@@ -13,9 +13,7 @@ VERSION=$(shell $(BINARY_YQ) -e ".Version" $(DOGU_JSON_FILE))
 # Image of the dogu is extracted from the dogu.json
 IMAGE=$(shell $(BINARY_YQ) -e ".Image" $(DOGU_JSON_FILE)):$(VERSION)
 IMAGE_DEV_WITHOUT_TAG=$(shell $(BINARY_YQ) -e ".Image" $(DOGU_JSON_FILE) | sed "s|registry\.cloudogu\.com\(.\+\)|${K3CES_REGISTRY_URL_PREFIX}\1|g")
-IMAGE_DEV_WITHOUT_TAG_CI=$(shell $(BINARY_YQ) -e ".Image" $(DOGU_JSON_FILE) | sed "s|registry\.cloudogu\.com\(.\+\)|${K3D_REGISTRY_URL}\1|g")
 IMAGE_DEV=${IMAGE_DEV_WITHOUT_TAG}:${VERSION}
-IMAGE_DEV_CI=${IMAGE_DEV_WITHOUT_TAG_CI}
 
 include $(WORKDIR)/build/make/k8s.mk
 
@@ -44,12 +42,5 @@ K8S_RESOURCE_DOGU_CR_TEMPLATE_YAML ?= $(WORKDIR)/build/make/k8s-dogu.tpl
 install-dogu-descriptor: ${BINARY_YQ} $(TARGET_DIR) ## Installs a configmap with current dogu.json into the cluster.
 	@echo "Generate configmap from dogu.json..."
 	@$(BINARY_YQ) ".Image=\"${IMAGE_DEV_WITHOUT_TAG}\"" ${DOGU_JSON_FILE} > ${DOGU_JSON_DEV_FILE}
-	@kubectl create configmap "$(ARTIFACT_ID)-descriptor" --from-file=$(DOGU_JSON_DEV_FILE) --dry-run=client -o yaml | kubectl apply -f -
-	@echo "Done."
-
-.PHNY: install-dogu-descriptor-ci
-install-dogu-descriptor-ci: ${BINARY_YQ} $(TARGET_DIR)
-	@echo "Generate configmap from dogu.json for k3d..."
-	@$(BINARY_YQ) ".Image=\"${IMAGE_DEV_CI}\"" ${DOGU_JSON_FILE} > ${DOGU_JSON_DEV_FILE}
 	@kubectl create configmap "$(ARTIFACT_ID)-descriptor" --from-file=$(DOGU_JSON_DEV_FILE) --dry-run=client -o yaml | kubectl apply -f -
 	@echo "Done."
