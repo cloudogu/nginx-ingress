@@ -124,27 +124,28 @@ void stageAutomaticRelease() {
         String credentials = 'cesmarvin-setup'
         def dockerImage
 
-        stage('Build & Push Image') {
+        /*stage('Build & Push Image') {
             dockerImage = docker.build("${namespace}/${repositoryName}:${dockerReleaseVersion}")
             docker.withRegistry('https://registry.cloudogu.com/', credentials) {
                 dockerImage.push("${dockerReleaseVersion}")
             }
-        }
+        }*/
 
         stage('Push dogu.json') {
             def doguJson = this.readJSON file: 'dogu.json'
             HttpClient httpClient = new HttpClient(this, credentials)
-            result = httpClient.put("https://dogu.cloudogu.com/api/v2/${namespace}/${repositoryName}", "application/json", doguJson)
+            //doguJson = doguJson.replace("'", "\\'")
+            result = httpClient.put("https://dogu.cloudogu.com/api/v2/${namespace}/${repositoryName}", "application/json", "{}")
             status = result["httpCode"]
             body = result["body"]
 
-            if (status >= 400) {
+            if ((status as Integer) >= 400) {
                 echo "Error pushing dogu.json"
                 echo "${body}"
             }
         }
 
-        stage('Finish Release') {
+        /*stage('Finish Release') {
             gitflow.finishRelease(releaseVersion, productionReleaseBranch)
         }
 
@@ -169,7 +170,7 @@ void stageAutomaticRelease() {
             github.addReleaseAsset("${releaseId}", "${doguYaml}")
             github.addReleaseAsset("${releaseId}", "${doguYaml}.sha256sum")
             github.addReleaseAsset("${releaseId}", "${doguYaml}.sha256sum.asc")
-        }
+        }*/
     }
 }
 
