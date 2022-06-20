@@ -68,7 +68,7 @@ node('docker') {
             }
 
             stage('Setup') {
-                k3d.setup("v0.6.0", 300, 5)
+                k3d.setup("v0.6.0", [:], 300, 5)
             }
 
             stage('Deploy Dogu') {
@@ -105,15 +105,28 @@ void stageAutomaticRelease() {
     if (gitflow.isReleaseBranch()) {
         String releaseVersion = git.getSimpleBranchName()
         String dockerReleaseVersion = releaseVersion.split("v")[1]
+        def doguJson = this.readJSON file: 'dogu.json'
+        String namespace = doguJson.Name.split("/")[0]
+        String credentials = 'cesmarvin-setup'
+        def dockerImage
 
         stage('Build & Push Image') {
-            def doguJson = this.readJSON file: 'dogu.json'
-            String namespace = doguJson.Name.split("/")[0]
-            def dockerImage = docker.build("${namespace}/${repositoryName}:${dockerReleaseVersion}")
-            docker.withRegistry('https://registry.cloudogu.com/', 'cesmarvin-setup') {
+            dockerImage = docker.build("${namespace}/${repositoryName}:${dockerReleaseVersion}")
+            docker.withRegistry('https://registry.cloudogu.com/', credentials) {
                 dockerImage.push("${dockerReleaseVersion}")
             }
-            // TODO Push dogu.json
+        }
+
+        stage('Push dogu.json') {
+            HttpClient httpClient = new HttpClient(this, credentials)
+            result = httpClient.put("https://dogu.cloudogu.com/api/v2/${doguJson.Name}", "application/json", doguJson)
+            status = result["httpCode"]
+            body = result["body"]
+
+            if (status >= 400) {
+                echo "Error pushing dogu.json"
+                echo "${body}"
+            }
         }
 
         stage('Finish Release') {
