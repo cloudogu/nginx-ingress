@@ -1,10 +1,11 @@
-FROM k8s.gcr.io/ingress-nginx/controller:v1.1.2@sha256:28b11ce69e57843de44e3db6413e98d09de0f6688e33d4bd384002a44f78405c
+FROM k8s.gcr.io/ingress-nginx/controller:v1.1.2
+
 LABEL maintainer="hello@cloudogu.com" \
-      NAME="official/nginx-ingress" \
+      NAME="k8s-testing/nginx-ingress" \
       VERSION="1.1.2-1"
 
-ENV WARP_MENU_VERSION=1.3.0 \
-    WARP_MENU_TAR_SHA256="f1ebc305ac03a2b59d8eb9b5624a26a3e5803bb8b6969df271c702bdb257792c" \
+ENV WARP_MENU_VERSION=1.5.0 \
+    WARP_MENU_TAR_SHA256="cfdd504a03aab8e5e4a33135d953b10aeba4816da5f549ddb1eb6ee593399826" \
     CES_ABOUT_VERSION=0.2.2 \
     CES_ABOUT_TAR_SHA256="9926649be62d8d4667b2e7e6d1e3a00ebec1c4bbc5b80a0e830f7be21219d496" \
     CES_THEME_VERSION=v0.7.0 \
@@ -47,7 +48,7 @@ RUN /injectNginxConfig.sh
 # adjust permissions
 RUN chown -R "${INGRESS_USER}:${INGRESS_USER}" /var/www
 
-USER "${INGRESS_USER}"
+USER www-data
 
 # Volumes are used to avoid writing to containers writable layer https://docs.docker.com/storage/
 # Compared to the bind mounted volumes we declare in the dogu.json,
