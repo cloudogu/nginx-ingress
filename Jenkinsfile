@@ -41,7 +41,7 @@ node('docker') {
         }
 
         stage('Generate k8s Resources') {
-            docker.image('golang:1.18.1')
+            docker.image("golang:${goVersion}")
                     .mountJenkinsUser()
                     .inside("--volume ${WORKSPACE}:/workdir -w /workdir") {
                         make 'k8s-create-temporary-resource'
@@ -107,19 +107,13 @@ void stageAutomaticRelease() {
         String dockerReleaseVersion = releaseVersion.split("v")[1]
 
         stage('Build & Push Image') {
-            withCredentials([usernamePassword(credentialsId: 'cesmarvin',
-                    passwordVariable: 'CES_MARVIN_PASSWORD',
-                    usernameVariable: 'CES_MARVIN_USERNAME')]) {
-                // .netrc is necessary to access private repos
-                sh "echo \"machine github.com\n" +
-                        "login ${CES_MARVIN_USERNAME}\n" +
-                        "password ${CES_MARVIN_PASSWORD}\" >> ~/.netrc"
-            }
-            def dockerImage = docker.build("cloudogu/${repositoryName}:${dockerReleaseVersion}")
-            sh "rm ~/.netrc"
-            docker.withRegistry('https://registry.hub.docker.com/', 'dockerHubCredentials') {
+            def doguJson = this.readJSON file: 'dogu.json'
+            String namespace = doguJson.Name.split("/")[0]
+            def dockerImage = docker.build("${namespace}/${repositoryName}:${dockerReleaseVersion}")
+            docker.withRegistry('https://registry.cloudogu.com/', 'cesmarvin-setup') {
                 dockerImage.push("${dockerReleaseVersion}")
             }
+            // TODO Push dogu.json
         }
 
         stage('Finish Release') {
@@ -142,12 +136,12 @@ void stageAutomaticRelease() {
 
         stage('Add Github-Release') {
             Makefile makefile = new Makefile(this)
-            String controllerVersion = makefile.getVersion()
-            GString targetOperatorResourceYaml = "target/${repositoryName}_${controllerVersion}.yaml"
+            String doguVersion = makefile.getVersion()
+            GString doguYaml = "target/make/k8s/${repositoryName}_${doguVersion}.yaml"
             releaseId = github.createReleaseWithChangelog(releaseVersion, changelog, productionReleaseBranch)
-            github.addReleaseAsset("${releaseId}", "${targetOperatorResourceYaml}")
-            github.addReleaseAsset("${releaseId}", "${targetOperatorResourceYaml}.sha256sum")
-            github.addReleaseAsset("${releaseId}", "${targetOperatorResourceYaml}.sha256sum.asc")
+            github.addReleaseAsset("${releaseId}", "${doguYaml}")
+            github.addReleaseAsset("${releaseId}", "${doguYaml}.sha256sum")
+            github.addReleaseAsset("${releaseId}", "${doguYaml}.sha256sum.asc")
         }
     }
 }
