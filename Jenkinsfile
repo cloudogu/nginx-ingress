@@ -50,8 +50,7 @@ node('docker') {
         K3d k3d = new K3d(this, "${WORKSPACE}", "${WORKSPACE}/k3d", env.PATH)
 
         try {
-            Makefile makefile = new Makefile(this)
-            String doguVersion = makefile.getVersion()
+            String doguVersion = getDoguVersion(false)
             GString sourceDeploymentYaml = "target/make/k8s/${repositoryName}_${doguVersion}.yaml"
 
             stage('Set up k3d cluster') {
@@ -60,8 +59,7 @@ node('docker') {
 
             String imageName
             stage('Build & Push Image') {
-                def doguJson = this.readJSON file: 'dogu.json'
-                String namespace = doguJson.Name.split("/")[0]
+                String namespace = getDoguNamespace()
                 imageName = k3d.buildAndPushToLocalRegistry("${namespace}/${repositoryName}", doguVersion)
             }
 
@@ -120,9 +118,8 @@ void testPlantUmlAccess(K3d k3d) {
 void stageAutomaticRelease() {
     if (gitflow.isReleaseBranch()) {
         String releaseVersion = git.getSimpleBranchName()
-        String dockerReleaseVersion = releaseVersion.split("v")[1]
-        def doguJson = this.readJSON file: 'dogu.json'
-        String namespace = doguJson.Name.split("/")[0]
+        String dockerReleaseVersion = getDoguVersion(false)
+        String namespace = getDoguNamespace()
         String credentials = 'cesmarvin-setup'
         def dockerImage
 
@@ -164,8 +161,7 @@ void stageAutomaticRelease() {
         }
 
         stage('Add Github-Release') {
-            Makefile makefile = new Makefile(this)
-            String doguVersion = makefile.getVersion()
+            String doguVersion = getDoguVersion(false)
             GString doguYaml = "target/make/k8s/${repositoryName}_${doguVersion}.yaml"
             releaseId = github.createReleaseWithChangelog(releaseVersion, changelog, productionReleaseBranch)
             github.addReleaseAsset("${releaseId}", "${doguYaml}")
@@ -173,6 +169,22 @@ void stageAutomaticRelease() {
             github.addReleaseAsset("${releaseId}", "${doguYaml}.sha256sum.asc")
         }
     }
+}
+
+String getDoguVersion(boolean withVersionPrefix) {
+    def doguJson = this.readJSON file: 'dogu.json'
+    String version = doguJson.Version
+
+    if (withVersionPrefix) {
+        return "v" + version
+    } else {
+        return version
+    }
+}
+
+String getDoguNamespace() {
+    def doguJson = this.readJSON file: 'dogu.json'
+    return doguJson.Name.split("/")[0]
 }
 
 void make(String makeArgs) {
