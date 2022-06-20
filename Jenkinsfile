@@ -53,34 +53,34 @@ node('docker') {
             String doguVersion = getDoguVersion(false)
             GString sourceDeploymentYaml = "target/make/k8s/${repositoryName}_${doguVersion}.yaml"
 
-            stage('Set up k3d cluster') {
-                k3d.startK3d()
-            }
-
-            String imageName
-            stage('Build & Push Image') {
-                String namespace = getDoguNamespace()
-                imageName = k3d.buildAndPushToLocalRegistry("${namespace}/${repositoryName}", doguVersion)
-            }
-
-            stage('Setup') {
-                k3d.setup("v0.6.0", [
-                        dependencies: ["official/postfix", "official/plantuml"],
-                        defaultDogu : "plantuml"
-                ])
-            }
-
-            stage('Deploy Dogu') {
-                k3d.installDogu(repositoryName, imageName, sourceDeploymentYaml)
-            }
-
-            stage('Wait for Ready Rollout') {
-                k3d.waitForDeploymentRollout(repositoryName, 300, 5)
-            }
-
-            stage('Test Nginx with PlantUML Deployment') {
-                testPlantUmlAccess(k3d)
-            }
+//            stage('Set up k3d cluster') {
+//                k3d.startK3d()
+//            }
+//
+//            String imageName
+//            stage('Build & Push Image') {
+//                String namespace = getDoguNamespace()
+//                imageName = k3d.buildAndPushToLocalRegistry("${namespace}/${repositoryName}", doguVersion)
+//            }
+//
+//            stage('Setup') {
+//                k3d.setup("v0.6.0", [
+//                        dependencies: ["official/postfix", "official/plantuml"],
+//                        defaultDogu : "plantuml"
+//                ])
+//            }
+//
+//            stage('Deploy Dogu') {
+//                k3d.installDogu(repositoryName, imageName, sourceDeploymentYaml)
+//            }
+//
+//            stage('Wait for Ready Rollout') {
+//                k3d.waitForDeploymentRollout(repositoryName, 300, 5)
+//            }
+//
+//            stage('Test Nginx with PlantUML Deployment') {
+//                testPlantUmlAccess(k3d)
+//            }
 
             stageAutomaticRelease()
         } finally {
@@ -132,8 +132,9 @@ void stageAutomaticRelease() {
         }
 
         stage('Push dogu.json') {
+            def doguJson = this.readJSON file: 'dogu.json'
             HttpClient httpClient = new HttpClient(this, credentials)
-            result = httpClient.put("https://dogu.cloudogu.com/api/v2/${doguJson.Name}", "application/json", doguJson)
+            result = httpClient.put("https://dogu.cloudogu.com/api/v2/${namespace}/${repositoryName}", "application/json", doguJson)
             status = result["httpCode"]
             body = result["body"]
 
