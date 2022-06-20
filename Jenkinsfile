@@ -3,6 +3,7 @@
 @Library(['github.com/cloudogu/dogu-build-lib@v1.6.0', 'github.com/cloudogu/ces-build-lib@c1cb91cd'])
 import com.cloudogu.ces.cesbuildlib.*
 import com.cloudogu.ces.dogubuildlib.*
+import groovy.json.JsonBuilder
 
 // Creating necessary git objects
 git = new Git(this, "cesmarvin")
@@ -30,7 +31,7 @@ node('docker') {
             make 'clean'
         }
 
-        stage('Lint') {
+        /*stage('Lint') {
             lintDockerfile()
         }
 
@@ -45,7 +46,7 @@ node('docker') {
                         make 'k8s-create-temporary-resource'
                     }
             archiveArtifacts 'target/make/k8s/*.yaml'
-        }
+        }*/
 
         K3d k3d = new K3d(this, "${WORKSPACE}", "${WORKSPACE}/k3d", env.PATH)
 
@@ -132,16 +133,16 @@ void stageAutomaticRelease() {
         }*/
 
         stage('Push dogu.json') {
-            def doguJson = this.readJSON file: 'dogu.json'
+            String doguJson = sh(script: "cat dogu.json", returnStdout: true)
             HttpClient httpClient = new HttpClient(this, credentials)
-            //doguJson = doguJson.replace("'", "\\'")
-            result = httpClient.put("https://dogu.cloudogu.com/api/v2/${namespace}/${repositoryName}", "application/json", "{}")
+            result = httpClient.put("https://dogu.cloudogu.com/api/v2/dogus/${namespace}/${repositoryName}", "application/json", doguJson)
             status = result["httpCode"]
             body = result["body"]
 
             if ((status as Integer) >= 400) {
                 echo "Error pushing dogu.json"
                 echo "${body}"
+                sh "exit 1"
             }
         }
 
