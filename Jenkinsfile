@@ -83,7 +83,7 @@ node('docker') {
             }
 
             stage('Test Nginx with PlantUML Deployment') {
-                testPlantUmlAccess()
+                testPlantUmlAccess(k3d)
             }
 
             stageAutomaticRelease()
@@ -98,7 +98,7 @@ node('docker') {
 /**
  * Creates a simple plantuml deployment and checks whether the dogu is accessible via the nginx.
  */
-void testPlantUmlAccess() {
+void testPlantUmlAccess(K3d k3d) {
     k3d.waitForDeploymentRollout("plantuml", 300, 5)
 
     String externalIP = sh(
