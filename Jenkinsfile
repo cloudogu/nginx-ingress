@@ -116,8 +116,9 @@ void testPlantUmlAccess(K3d k3d) {
 }
 
 void stageAutomaticRelease() {
-    if (gitflow.isReleaseBranch()) {
-        String releaseVersion = git.getSimpleBranchName()
+    if (!gitflow.isReleaseBranch()) {
+        //String releaseVersion = git.getSimpleBranchName()
+        String releaseVersion = getDoguVersion(true)
         String dockerReleaseVersion = getDoguVersion(false)
         String namespace = getDoguNamespace()
         String credentials = 'cesmarvin-setup'
