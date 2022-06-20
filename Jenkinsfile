@@ -22,8 +22,6 @@ project = "github.com/${repositoryOwner}/${repositoryName}"
 
 // Configuration of branches
 productionReleaseBranch = "main"
-developmentBranch = "develop"
-currentBranch = "${env.BRANCH_NAME}"
 
 node('docker') {
     timestamps {
@@ -101,10 +99,6 @@ node('docker') {
 void testPlantUmlAccess() {
     k3d.waitForDeploymentRollout("plantuml", 300, 5)
 
-    String externalIP = sh(
-            script: "curl -H \"Metadata-Flavor: Google\" http://169.254.169.254/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip",
-            returnStdout: true
-    )
     String port = sh(script: 'echo -n $(python3 -c \'import socket; s=socket.socket(); s.bind(("", 0)); print(s.getsockname()[1]); s.close()\');', returnStdout: true)
 
     // the process is automatically terminated when canceling/terminating the build
@@ -120,15 +114,6 @@ void testPlantUmlAccess() {
     if (!plantUml.contains("<title>PlantUMLServer</title>")) {
         sh "echo PlantUML does not seem to be available. Fail pipeline..."
         sh "exit 1"
-    }
-}
-
-void gitWithCredentials(String command) {
-    withCredentials([usernamePassword(credentialsId: 'cesmarvin', usernameVariable: 'GIT_AUTH_USR', passwordVariable: 'GIT_AUTH_PSW')]) {
-        sh(
-                script: "git -c credential.helper=\"!f() { echo username='\$GIT_AUTH_USR'; echo password='\$GIT_AUTH_PSW'; }; f\" " + command,
-                returnStdout: true
-        )
     }
 }
 

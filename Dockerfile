@@ -1,7 +1,7 @@
 FROM k8s.gcr.io/ingress-nginx/controller:v1.1.2
 
 LABEL maintainer="hello@cloudogu.com" \
-      NAME="k8s/nginx-ingress" \
+      NAME="k8s-testing/nginx-ingress" \
       VERSION="1.1.2-1"
 
 ENV WARP_MENU_VERSION=1.5.0 \

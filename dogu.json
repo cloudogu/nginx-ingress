@@ -1,5 +1,5 @@
 {
-  "Name": "k8s/nginx-ingress",
+  "Name": "k8s-testing/nginx-ingress",
   "Version": "1.1.2-0",
   "DisplayName": "Nginx Ingress",
   "Description": "Nginx WebServer with Ingress Controller.",
