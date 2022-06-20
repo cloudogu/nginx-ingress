@@ -1,6 +1,6 @@
 #!groovy
 
-@Library(['github.com/cloudogu/dogu-build-lib@v1.6.0', 'github.com/cloudogu/ces-build-lib@638292d0fd93ad6532b72195f9aa3733098e12a3'])
+@Library(['github.com/cloudogu/dogu-build-lib@v1.6.0', 'github.com/cloudogu/ces-build-lib@c1cb91cd'])
 import com.cloudogu.ces.cesbuildlib.*
 import com.cloudogu.ces.dogubuildlib.*
 
@@ -68,7 +68,10 @@ node('docker') {
             }
 
             stage('Setup') {
-                k3d.setup("v0.6.0", 300, 5)
+                k3d.setup("v0.6.0", [
+                        dependencies: ["official/postfix", "official/plantuml"],
+                        defaultDogu : "plantuml"
+                ])
             }
 
             stage('Deploy Dogu') {
@@ -79,8 +82,8 @@ node('docker') {
                 k3d.waitForDeploymentRollout(repositoryName, 300, 5)
             }
 
-            stage('Test') {
-                // TODO
+            stage('Test Nginx with PlantUML Deployment') {
+                testPlantUmlAccess()
             }
 
             stageAutomaticRelease()
@@ -89,6 +92,34 @@ node('docker') {
                 k3d.deleteK3d()
             }
         }
+    }
+}
+
+/**
+ * Creates a simple plantuml deployment and checks whether the dogu is accessible via the nginx.
+ */
+void testPlantUmlAccess() {
+    k3d.waitForDeploymentRollout("plantuml", 300, 5)
+
+    String externalIP = sh(
+            script: "curl -H \"Metadata-Flavor: Google\" http://169.254.169.254/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip",
+            returnStdout: true
+    )
+    String port = sh(script: 'echo -n $(python3 -c \'import socket; s=socket.socket(); s.bind(("", 0)); print(s.getsockname()[1]); s.close()\');', returnStdout: true)
+
+    // the process is automatically terminated when canceling/terminating the build
+    k3d.kubectl("port-forward service/nginx-ingress ${port}:443 &")
+
+    sh "sleep 5"
+
+    String plantUml = sh(
+            script: "curl -L --insecure https://127.0.0.1:${port}/plantuml",
+            returnStdout: true
+    )
+
+    if (!plantUml.contains("<title>PlantUMLServer</title>")) {
+        sh "echo PlantUML does not seem to be available. Fail pipeline..."
+        sh "exit 1"
     }
 }
 
