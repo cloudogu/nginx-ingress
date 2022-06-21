@@ -1,8 +1,8 @@
 #!groovy
-
-@Library(['github.com/cloudogu/dogu-build-lib@v1.6.0', 'github.com/cloudogu/ces-build-lib@c1cb91cd'])
+@Library(['github.com/cloudogu/dogu-build-lib@v1.6.0', 'github.com/cloudogu/ces-build-lib@1.54.0'])
 import com.cloudogu.ces.cesbuildlib.*
 import com.cloudogu.ces.dogubuildlib.*
+import groovy.json.JsonBuilder
 
 // Creating necessary git objects
 git = new Git(this, "cesmarvin")
@@ -53,34 +53,34 @@ node('docker') {
             String doguVersion = getDoguVersion(false)
             GString sourceDeploymentYaml = "target/make/k8s/${repositoryName}_${doguVersion}.yaml"
 
-//            stage('Set up k3d cluster') {
-//                k3d.startK3d()
-//            }
-//
-//            String imageName
-//            stage('Build & Push Image') {
-//                String namespace = getDoguNamespace()
-//                imageName = k3d.buildAndPushToLocalRegistry("${namespace}/${repositoryName}", doguVersion)
-//            }
-//
-//            stage('Setup') {
-//                k3d.setup("v0.6.0", [
-//                        dependencies: ["official/postfix", "official/plantuml"],
-//                        defaultDogu : "plantuml"
-//                ])
-//            }
-//
-//            stage('Deploy Dogu') {
-//                k3d.installDogu(repositoryName, imageName, sourceDeploymentYaml)
-//            }
-//
-//            stage('Wait for Ready Rollout') {
-//                k3d.waitForDeploymentRollout(repositoryName, 300, 5)
-//            }
-//
-//            stage('Test Nginx with PlantUML Deployment') {
-//                testPlantUmlAccess(k3d)
-//            }
+            stage('Set up k3d cluster') {
+                k3d.startK3d()
+            }
+
+            String imageName
+            stage('Build & Push Image') {
+                String namespace = getDoguNamespace()
+                imageName = k3d.buildAndPushToLocalRegistry("${namespace}/${repositoryName}", doguVersion)
+            }
+
+            stage('Setup') {
+                k3d.setup("v0.6.0", [
+                        dependencies: ["official/postfix", "official/plantuml"],
+                        defaultDogu : "plantuml"
+                ])
+            }
+
+            stage('Deploy Dogu') {
+                k3d.installDogu(repositoryName, imageName, sourceDeploymentYaml)
+            }
+
+            stage('Wait for Ready Rollout') {
+                k3d.waitForDeploymentRollout(repositoryName, 300, 5)
+            }
+
+            stage('Test Nginx with PlantUML Deployment') {
+                testPlantUmlAccess(k3d)
+            }
 
             stageAutomaticRelease()
         } finally {
@@ -116,8 +116,7 @@ void testPlantUmlAccess(K3d k3d) {
 }
 
 void stageAutomaticRelease() {
-    if (!gitflow.isReleaseBranch()) {
-        //String releaseVersion = git.getSimpleBranchName()
+    if (gitflow.isReleaseBranch()) {
         String releaseVersion = getDoguVersion(true)
         String dockerReleaseVersion = getDoguVersion(false)
         String namespace = getDoguNamespace()
@@ -132,24 +131,21 @@ void stageAutomaticRelease() {
         }
 
         stage('Push dogu.json') {
-            def doguJson = this.readJSON file: 'dogu.json'
+            String doguJson = sh(script: "cat dogu.json", returnStdout: true)
             HttpClient httpClient = new HttpClient(this, credentials)
-            result = httpClient.put("https://dogu.cloudogu.com/api/v2/${namespace}/${repositoryName}", "application/json", doguJson)
+            result = httpClient.put("https://dogu.cloudogu.com/api/v2/dogus/${namespace}/${repositoryName}", "application/json", doguJson)
             status = result["httpCode"]
             body = result["body"]
 
-            if (status >= 400) {
+            if ((status as Integer) >= 400) {
                 echo "Error pushing dogu.json"
                 echo "${body}"
+                sh "exit 1"
             }
         }
 
         stage('Finish Release') {
             gitflow.finishRelease(releaseVersion, productionReleaseBranch)
-        }
-
-        stage('Sign after Release') {
-            gpg.createSignature()
         }
 
         stage('Regenerate resources for release') {
@@ -167,8 +163,6 @@ void stageAutomaticRelease() {
             GString doguYaml = "target/make/k8s/${repositoryName}_${doguVersion}.yaml"
             releaseId = github.createReleaseWithChangelog(releaseVersion, changelog, productionReleaseBranch)
             github.addReleaseAsset("${releaseId}", "${doguYaml}")
-            github.addReleaseAsset("${releaseId}", "${doguYaml}.sha256sum")
-            github.addReleaseAsset("${releaseId}", "${doguYaml}.sha256sum.asc")
         }
     }
 }
