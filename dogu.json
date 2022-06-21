@@ -1,6 +1,6 @@
 {
-  "Name": "k8s-testing/nginx-ingress",
-  "Version": "1.1.2-0",
+  "Name": "k8s/nginx-ingress",
+  "Version": "1.1.2-1",
   "DisplayName": "Nginx Ingress",
   "Description": "Nginx WebServer with Ingress Controller.",
   "Logo": "https://cloudogu.com/images/dogus/nginx.png",
@@ -12,7 +12,7 @@
     "k8s"
   ],
   "Url": "https://kubernetes.github.io/ingress-nginx/",
-  "Image": "registry.cloudogu.com/k8s-testing/nginx-ingress",
+  "Image": "registry.cloudogu.com/k8s/nginx-ingress",
   "Dependencies": [
     {
       "type": "dogu",
