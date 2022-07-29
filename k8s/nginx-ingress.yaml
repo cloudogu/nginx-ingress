@@ -163,11 +163,4 @@ spec:
     spec:
       containers:
         - name: nginx-ingress
-          volumeMounts:
-            - name: menu-json-volume
-              mountPath: /var/www/html/warp/menu
       serviceAccountName: nginx-ingress
-      volumes:
-        - name: menu-json-volume
-          configMap:
-            name: k8s-ces-menu-json
