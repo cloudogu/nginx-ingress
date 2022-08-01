@@ -1,4 +1,4 @@
-FROM k8s.gcr.io/ingress-nginx/controller:v1.1.2
+FROM k8s.gcr.io/ingress-nginx/controller:v1.3.0
 
 LABEL maintainer="hello@cloudogu.com" \
       NAME="k8s-testing/nginx-ingress" \
@@ -7,11 +7,6 @@ LABEL maintainer="hello@cloudogu.com" \
 ENV INGRESS_USER=www-data
 
 USER root
-
-# prepare folders
-RUN set -x \
- && mkdir -p /var/www/html \
- && mkdir -p /var/www/customhtml
 
 # copy files
 COPY resources /

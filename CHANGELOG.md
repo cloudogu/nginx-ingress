@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Changed
+- [#9] Updated the nginx ingress controller to version 1.3.0. More information can be found [ere](https://github.com/kubernetes/ingress-nginx/releases/tag/controller-v1.3.0)
+
+### Removed
+- [#9] Static content such as the ces-theme is no longer served by the ingress controller. The static content is generally outsources to another webserver called [k8s-static-webserver](https://github.com/cloudogu/k8s-static-webserver)
 
 ## [v1.1.2-1] - 2022-06-21
 ### Changed
