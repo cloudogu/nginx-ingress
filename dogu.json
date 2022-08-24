@@ -21,7 +21,7 @@
     {
       "type": "client",
       "name": "cesapp",
-      "version": "0.0.0"
+      "version": "<0.0.0"
     }
   ],
   "Configuration": [
