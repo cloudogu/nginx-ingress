@@ -78,31 +78,10 @@ node('docker') {
                 k3d.waitForDeploymentRollout(repositoryName, 300, 5)
             }
 
-            plantumlStringYamlDescriptor = '''
-apiVersion: k8s.cloudogu.com/v1
-kind: Dogu
-metadata:
-  name: plantuml
-  labels:
-    dogu: plantuml
-spec:
-  name: official/plantuml
-  version: 2022.4-1
-            '''
-
-            nginxStaticStringYamlDescriptor = '''
-apiVersion: k8s.cloudogu.com/v1
-kind: Dogu
-metadata:
-  name: nginx-static
-  labels:
-    dogu: nginx-static
-spec:
-  name: k8s/nginx-static
-  version: 1.23.1-2
-            '''
-
             stage('Test Nginx with PlantUML Deployment') {
+                nginxStaticStringYamlDescriptor = DoguResourceFor("nginx-static", "k8s", "1.23.1-2")
+                plantumlStringYamlDescriptor = DoguResourceFor("plantuml", "official", "2022.4-1")
+
                 k3d.installDogu(repositoryName, "plantuml", plantumlStringYamlDescriptor)
                 k3d.installDogu(repositoryName, "nginx-static", nginxStaticStringYamlDescriptor)
                 testPlantUmlAccess(k3d)
@@ -111,10 +90,43 @@ spec:
             stageAutomaticRelease()
         } finally {
             stage('Remove k3d cluster') {
+                printCesResourceYamls(k3d)
                 k3d.deleteK3d()
             }
         }
     }
+}
+
+void printCesResourceYamls(K3d k3d) {
+    def relevantResources = [
+            "persistentvolumeclaim",
+            "statefulset",
+            "replicaset",
+            "deployment",
+            "service",
+            "secret",
+            "pod",
+    ]
+    for(def resource : relevantResources) {
+        def output = k3d.kubectl("get ${resource} --show-kind --ignore-not-found -l app=ces -n ecosystem -o yaml", true)
+        echo "${output}"
+    }
+    k3d.kubectl("get dogu --show-kind --ignore-not-found -n ecosystem -o yaml")
+    echo "${output}"
+}
+
+GString DoguResourceFor(String doguName, String doguNamespace, String version) {
+    return """
+apiVersion: k8s.cloudogu.com/v1
+kind: Dogu
+metadata:
+  name: ${doguName}
+  labels:
+    dogu: ${doguName}
+spec:
+  name: ${doguNamespace}/${doguName}
+  version: ${version}
+"""
 }
 
 /**
