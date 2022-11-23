@@ -11,6 +11,12 @@
     "reverse-proxy",
     "k8s"
   ],
+  "ServiceAccounts": [
+    {
+      "Type": "k8s-dogu-operator",
+      "Kind": "k8s"
+    }
+  ],
   "Url": "https://kubernetes.github.io/ingress-nginx/",
   "Image": "registry.cloudogu.com/k8s/nginx-ingress",
   "Dependencies": [
