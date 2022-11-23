@@ -90,8 +90,11 @@ node('docker') {
             stageAutomaticRelease()
         } finally {
             stage('Remove k3d cluster') {
-                printCesResourceYamls(k3d)
+                try {
+                    printCesResourceYamls(k3d)
+                } finally {
                 k3d.deleteK3d()
+                }
             }
         }
     }
@@ -111,7 +114,7 @@ void printCesResourceYamls(K3d k3d) {
         def output = k3d.kubectl("get ${resource} --show-kind --ignore-not-found -l app=ces -n ecosystem -o yaml", true)
         echo "${output}"
     }
-    k3d.kubectl("get dogu --show-kind --ignore-not-found -n ecosystem -o yaml")
+    def output = k3d.kubectl("get dogu --show-kind --ignore-not-found -n ecosystem -o yaml")
     echo "${output}"
 }
 
