@@ -64,7 +64,7 @@ node('docker') {
             }
 
             stage('Setup') {
-                k3d.setup("v0.6.0", [
+                k3d.setup("v0.8.0", [
                         dependencies: ["official/postfix", "official/plantuml"],
                         defaultDogu : "plantuml"
                 ])
