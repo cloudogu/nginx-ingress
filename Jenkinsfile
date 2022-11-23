@@ -65,8 +65,8 @@ node('docker') {
 
             stage('Setup') {
                 k3d.setup("v0.8.0", [
-                        dependencies: ["official/postfix", "official/plantuml"],
-                        defaultDogu : "plantuml"
+                        dependencies: ["official/postfix"],
+                        defaultDogu : ""
                 ])
             }
 
@@ -78,7 +78,33 @@ node('docker') {
                 k3d.waitForDeploymentRollout(repositoryName, 300, 5)
             }
 
+            plantumlStringYamlDescriptor = '''
+apiVersion: k8s.cloudogu.com/v1
+kind: Dogu
+metadata:
+  name: plantuml
+  labels:
+    dogu: plantuml
+spec:
+  name: official/plantuml
+  version: 2022.4-1
+            '''
+
+            nginxStaticStringYamlDescriptor = '''
+apiVersion: k8s.cloudogu.com/v1
+kind: Dogu
+metadata:
+  name: nginx-static
+  labels:
+    dogu: nginx-static
+spec:
+  name: k8s/nginx-static
+  version: 1.23.1-2
+            '''
+
             stage('Test Nginx with PlantUML Deployment') {
+                k3d.installDogu(repositoryName, "plantuml", plantumlStringYamlDescriptor)
+                k3d.installDogu(repositoryName, "nginx-static", nginxStaticStringYamlDescriptor)
                 testPlantUmlAccess(k3d)
             }
 
