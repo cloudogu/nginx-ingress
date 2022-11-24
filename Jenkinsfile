@@ -82,19 +82,21 @@ node('docker') {
                 nginxStaticStringYamlDescriptor = DoguResourceFor("nginx-static", "k8s", "1.23.1-2")
                 plantumlStringYamlDescriptor = DoguResourceFor("plantuml", "official", "2022.4-1")
 
-                k3d.installDogu(repositoryName, "plantuml", plantumlStringYamlDescriptor)
-                k3d.installDogu(repositoryName, "nginx-static", nginxStaticStringYamlDescriptor)
+                k3d.kubectl("apply -f ${nginxStaticStringYamlDescriptor} -f ${plantumlStringYamlDescriptor}")
                 testPlantUmlAccess(k3d)
             }
 
             stageAutomaticRelease()
-        } finally {
+        } catch(Exception e) {
+            try {
+                printCesResourceYamls(k3d)
+            } finally {
+                throw e
+            }
+        }
+        finally {
             stage('Remove k3d cluster') {
-                try {
-                    printCesResourceYamls(k3d)
-                } finally {
                 k3d.deleteK3d()
-                }
             }
         }
     }
@@ -110,16 +112,22 @@ void printCesResourceYamls(K3d k3d) {
             "secret",
             "pod",
     ]
+    def result
     for(def resource : relevantResources) {
-        def output = k3d.kubectl("get ${resource} --show-kind --ignore-not-found -l app=ces -n ecosystem -o yaml", true)
-        echo "${output}"
+        def result1 = k3d.kubectl("get ${resource} --show-kind --ignore-not-found -l app=ces -n ecosystem -o yaml", true)
+        def output2 = sh.returnStdOut("echo ${result1}")
+        echo "${output2}"
+        writeFile(file: "${resource}.yaml", text: result1)
     }
-    def output = k3d.kubectl("get dogu --show-kind --ignore-not-found -n ecosystem -o yaml")
-    echo "${output}"
+    def result1 = k3d.kubectl("get dogu --show-kind --ignore-not-found -n ecosystem -o yaml", true)
+    def output2 = sh.returnStdOut("echo ${result1}")
+    echo "${output2}"
+    writeFile(file: "dogus.yaml", text: result1)
 }
 
-GString DoguResourceFor(String doguName, String doguNamespace, String version) {
-    return """
+String DoguResourceFor(String doguName, String doguNamespace, String version) {
+    def filename = "target/make/k8s/${doguName}.yaml"
+    def doguContentYaml = """
 apiVersion: k8s.cloudogu.com/v1
 kind: Dogu
 metadata:
@@ -130,6 +138,9 @@ spec:
   name: ${doguNamespace}/${doguName}
   version: ${version}
 """
+    writeFile(file: filename, text: doguContentYaml)
+
+    return filename
 }
 
 /**
