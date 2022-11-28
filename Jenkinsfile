@@ -1,5 +1,5 @@
 #!groovy
-@Library(['github.com/cloudogu/dogu-build-lib@v1.6.0', 'github.com/cloudogu/ces-build-lib@1.54.0'])
+@Library(['github.com/cloudogu/dogu-build-lib@v1.6.0', 'github.com/cloudogu/ces-build-lib@dafa1ff0'])
 import com.cloudogu.ces.cesbuildlib.*
 import com.cloudogu.ces.dogubuildlib.*
 import groovy.json.JsonBuilder
@@ -79,20 +79,16 @@ node('docker') {
             }
 
             stage('Test Nginx with PlantUML Deployment') {
-                nginxStaticStringYamlDescriptor = DoguResourceFor("nginx-static", "k8s", "1.23.1-2")
-                plantumlStringYamlDescriptor = DoguResourceFor("plantuml", "official", "2022.4-1")
-
-                k3d.kubectl("apply -f ${nginxStaticStringYamlDescriptor} -f ${plantumlStringYamlDescriptor}")
+                k3d.applyDoguResource("nginx-static", "k8s", "1.23.1-2")
+                k3d.applyDoguResource("plantuml", "official", "2022.4-1")
                 testPlantUmlAccess(k3d)
             }
 
             stageAutomaticRelease()
-        } catch(Exception e) {
-            try {
-                printCesResourceYamls(k3d)
-            } finally {
-                throw e
-            }
+        }
+        catch(Exception e) {
+            k3d.collectAndArchiveLogs()
+            throw e
         }
         finally {
             stage('Remove k3d cluster') {
@@ -100,47 +96,6 @@ node('docker') {
             }
         }
     }
-}
-
-void printCesResourceYamls(K3d k3d) {
-    def relevantResources = [
-            "persistentvolumeclaim",
-            "statefulset",
-            "replicaset",
-            "deployment",
-            "service",
-            "secret",
-            "pod",
-    ]
-    def result
-    for(def resource : relevantResources) {
-        def result1 = k3d.kubectl("get ${resource} --show-kind --ignore-not-found -l app=ces -n ecosystem -o yaml", true)
-        def output2 = sh.returnStdOut("echo ${result1}")
-        echo "${output2}"
-        writeFile(file: "${resource}.yaml", text: result1)
-    }
-    def result1 = k3d.kubectl("get dogu --show-kind --ignore-not-found -n ecosystem -o yaml", true)
-    def output2 = sh.returnStdOut("echo ${result1}")
-    echo "${output2}"
-    writeFile(file: "dogus.yaml", text: result1)
-}
-
-String DoguResourceFor(String doguName, String doguNamespace, String version) {
-    def filename = "target/make/k8s/${doguName}.yaml"
-    def doguContentYaml = """
-apiVersion: k8s.cloudogu.com/v1
-kind: Dogu
-metadata:
-  name: ${doguName}
-  labels:
-    dogu: ${doguName}
-spec:
-  name: ${doguNamespace}/${doguName}
-  version: ${version}
-"""
-    writeFile(file: filename, text: doguContentYaml)
-
-    return filename
 }
 
 /**
