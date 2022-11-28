@@ -16,12 +16,24 @@
   "Dependencies": [
     {
       "type": "client",
-      "name": "k8s-dogu-operator"
+      "name": "k8s-dogu-operator",
+      "version": ">=0.16.0"
     },
     {
       "type": "client",
       "name": "cesapp",
       "version": "<0.0.0"
+    },
+    {
+      "type": "client",
+      "name": "ces-setup",
+      "version": "<0.0.0"
+    }
+  ],
+  "ServiceAccounts": [
+    {
+      "Type": "k8s-dogu-operator",
+      "Kind": "k8s"
     }
   ],
   "Configuration": [

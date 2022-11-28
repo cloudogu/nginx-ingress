@@ -1,5 +1,5 @@
 #!groovy
-@Library(['github.com/cloudogu/dogu-build-lib@v1.6.0', 'github.com/cloudogu/ces-build-lib@1.54.0'])
+@Library(['github.com/cloudogu/dogu-build-lib@v1.6.0', 'github.com/cloudogu/ces-build-lib@v1.59.0'])
 import com.cloudogu.ces.cesbuildlib.*
 import com.cloudogu.ces.dogubuildlib.*
 import groovy.json.JsonBuilder
@@ -64,9 +64,9 @@ node('docker') {
             }
 
             stage('Setup') {
-                k3d.setup("v0.6.0", [
-                        dependencies: ["official/postfix", "official/plantuml"],
-                        defaultDogu : "plantuml"
+                k3d.setup("v0.8.0", [
+                        dependencies: ["official/postfix"],
+                        defaultDogu : ""
                 ])
             }
 
@@ -79,11 +79,18 @@ node('docker') {
             }
 
             stage('Test Nginx with PlantUML Deployment') {
+                k3d.applyDoguResource("nginx-static", "k8s", "1.23.1-2")
+                k3d.applyDoguResource("plantuml", "official", "2022.4-1")
                 testPlantUmlAccess(k3d)
             }
 
             stageAutomaticRelease()
-        } finally {
+        }
+        catch(Exception e) {
+            k3d.collectAndArchiveLogs()
+            throw e
+        }
+        finally {
             stage('Remove k3d cluster') {
                 k3d.deleteK3d()
             }
