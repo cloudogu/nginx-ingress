@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v1.3.0-2] - 2022-11-28
+### Changed
+- [#11] Replace custom deployment definition with new service account definitions in the `dogu.json`.
+
 ## [v1.3.0-1] - 2022-08-24
 ### Changed
 - [#9] Updated the nginx ingress controller to version 1.3.0. More information can be found [here](https://github.com/kubernetes/ingress-nginx/releases/tag/controller-v1.3.0)

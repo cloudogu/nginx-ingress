@@ -1,6 +1,6 @@
 {
   "Name": "k8s/nginx-ingress",
-  "Version": "1.3.0-1",
+  "Version": "1.3.0-2",
   "DisplayName": "Nginx Ingress",
   "Description": "Nginx WebServer with Ingress Controller.",
   "Logo": "https://cloudogu.com/images/dogus/nginx.png",
@@ -16,12 +16,24 @@
   "Dependencies": [
     {
       "type": "client",
-      "name": "k8s-dogu-operator"
+      "name": "k8s-dogu-operator",
+      "version": ">=0.16.0"
     },
     {
       "type": "client",
       "name": "cesapp",
       "version": "<0.0.0"
+    },
+    {
+      "type": "client",
+      "name": "ces-setup",
+      "version": "<0.0.0"
+    }
+  ],
+  "ServiceAccounts": [
+    {
+      "Type": "k8s-dogu-operator",
+      "Kind": "k8s"
     }
   ],
   "Configuration": [
