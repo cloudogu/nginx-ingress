@@ -1,5 +1,5 @@
 #!groovy
-@Library(['github.com/cloudogu/dogu-build-lib@v1.6.0', 'github.com/cloudogu/ces-build-lib@v1.59.0'])
+@Library(['github.com/cloudogu/dogu-build-lib@v2.0.0', 'github.com/cloudogu/ces-build-lib@v1.62.0'])
 import com.cloudogu.ces.cesbuildlib.*
 import com.cloudogu.ces.dogubuildlib.*
 import groovy.json.JsonBuilder
@@ -12,7 +12,6 @@ gitflow = new GitFlow(this, git)
 github = new GitHub(this, git)
 changelog = new Changelog(this)
 Docker docker = new Docker(this)
-gpg = new Gpg(this, docker)
 goVersion = "1.18"
 
 // Configuration of repository
@@ -32,6 +31,11 @@ node('docker') {
 
         stage('Lint') {
             lintDockerfile()
+        }
+
+        stage('Check Markdown Links') {
+            Markdown markdown = new Markdown(this)
+            markdown.check()
         }
 
         stage('Shellcheck') {
@@ -64,7 +68,7 @@ node('docker') {
             }
 
             stage('Setup') {
-                k3d.setup("v0.8.0", [
+                k3d.setup("v0.11.1", [
                         dependencies: ["official/postfix"],
                         defaultDogu : ""
                 ])
