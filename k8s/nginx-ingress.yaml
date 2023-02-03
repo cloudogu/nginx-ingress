@@ -60,13 +60,6 @@ rules:
       - pods
       - secrets
       - endpoints
-    verbs:
-      - get
-      - list
-      - watch
-  - apiGroups:
-      - ""
-    resources:
       - services
     verbs:
       - get
@@ -86,14 +79,6 @@ rules:
       - ingresses/status
     verbs:
       - update
-  - apiGroups:
-      - networking.k8s.io
-    resources:
-      - ingressclasses
-    verbs:
-      - get
-      - list
-      - watch
   - apiGroups:
       - ""
     resources:
@@ -116,6 +101,14 @@ rules:
     verbs:
       - create
       - patch
+  - apiGroups:
+      - coordination.k8s.io
+    resources:
+      - leases
+    verbs:
+      - get
+      - create
+      - update
 ---
 apiVersion: v1
 kind: ServiceAccount
