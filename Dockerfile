@@ -2,7 +2,7 @@ FROM k8s.gcr.io/ingress-nginx/controller:v1.3.0
 
 LABEL maintainer="hello@cloudogu.com" \
       NAME="k8s-testing/nginx-ingress" \
-      VERSION="1.3.0-2"
+      VERSION="1.3.0-3"
 
 ENV INGRESS_USER=www-data
 
