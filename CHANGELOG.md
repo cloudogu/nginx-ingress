@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v1.3.0-3] - 2023-02-06
+### Added
+- [#13] Add namespaced permissions to get, create and update coordination.k8s.io/leases
+
 ## [v1.3.0-2] - 2022-11-28
 ### Changed
 - [#11] Replace custom deployment definition with new service account definitions in the `dogu.json`.
