@@ -109,6 +109,13 @@ rules:
       - get
       - create
       - update
+  - apiGroups:
+      - discovery.k8s.io
+    resources:
+      - endpointslices
+    verbs:
+      - list
+      - watch
 ---
 apiVersion: v1
 kind: ServiceAccount

@@ -1,4 +1,4 @@
-FROM k8s.gcr.io/ingress-nginx/controller:v1.3.0
+FROM k8s.gcr.io/ingress-nginx/controller:v1.5.1
 
 LABEL maintainer="hello@cloudogu.com" \
       NAME="k8s-testing/nginx-ingress" \
