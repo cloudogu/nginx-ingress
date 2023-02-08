@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Changed
+- [#15] Set `proxy_intercept_errors off;` so that dogus like bluespice work properly.
+- Update ingress-nginx to 1.5.1
 
 ## [v1.3.0-3] - 2023-02-06
 ### Added
