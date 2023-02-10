@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v1.5.1-2] - 2023-02-10
+### Changed
+- [#17] Gzip proxied responses
+
 ## [v1.5.1-1] - 2023-02-08
 ### Changed
 - [#15] Set `proxy_intercept_errors off;` so that dogus like bluespice work properly.
