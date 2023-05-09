@@ -1,8 +1,8 @@
-FROM k8s.gcr.io/ingress-nginx/controller:v1.5.1
+FROM registry.k8s.io/ingress-nginx/controller:v1.6.4
 
 LABEL maintainer="hello@cloudogu.com" \
       NAME="k8s-testing/nginx-ingress" \
-      VERSION="1.5.1-2"
+      VERSION="1.6.4-1"
 
 ENV INGRESS_USER=www-data
 
@@ -14,6 +14,8 @@ COPY k8s /k8s
 
 # inject custom config into template
 RUN /injectNginxConfig.sh
+
+RUN apk update && apk upgrade && apk del curl
 
 USER www-data
 
