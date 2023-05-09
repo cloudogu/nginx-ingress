@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Changed
+- [#20] Use registry.k8s.io 
+- Update ingress-nginx to 1.6.4
 
 ## [v1.5.1-2] - 2023-02-10
 ### Changed
