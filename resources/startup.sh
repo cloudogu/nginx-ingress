@@ -27,4 +27,6 @@ echo "[nginx] starting nginx service..."
   --validating-webhook-certificate=/usr/local/certificates/cert \
   --validating-webhook-key=/usr/local/certificates/key \
   --default-ssl-certificate="${POD_NAMESPACE}"/ecosystem-certificate \
-  --watch-namespace="${POD_NAMESPACE}"
+  --watch-namespace="${POD_NAMESPACE}" \
+  --tcp-services-configmap="${POD_NAMESPACE}"/tcp-services \
+  --udp-services-configmap="${POD_NAMESPACE}"/udp-services

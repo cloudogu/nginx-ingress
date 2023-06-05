@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v1.6.4-2] - 2023-06-05
+### Added
+- [#22] Added configmaps `tcp-services` and `udp-services` to provide the possibility to expose those.
+
 ## [v1.6.4-1] - 2023-05-09
 ### Changed
 - [#20] Use registry.k8s.io 
