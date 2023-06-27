@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v1.6.4-3] - 2023-06-27
+### Added
+- [#24] Configuration options for resource requirements
+- [#24] Defaults for CPU and memory requests
+
 ## [v1.6.4-2] - 2023-06-05
 ### Added
 - [#22] Added configmaps `tcp-services` and `udp-services` to provide the possibility to expose those.
