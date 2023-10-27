@@ -1,6 +1,6 @@
 {
   "Name": "k8s/nginx-ingress",
-  "Version": "1.6.4-3",
+  "Version": "1.6.4-4",
   "DisplayName": "Nginx Ingress",
   "Description": "Nginx WebServer with Ingress Controller.",
   "Logo": "https://cloudogu.com/images/dogus/nginx.png",
