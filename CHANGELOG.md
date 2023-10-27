@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v1.6.4-4] - 2023-10-27
+### Fixed
+- Fixed CVE-2023-38545
+
 ## [v1.6.4-3] - 2023-06-27
 ### Added
 - [#24] Configuration options for resource requirements
