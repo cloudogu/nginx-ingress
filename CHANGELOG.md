@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
-- Default CSS Styles and Whitelabeling CSS Styles are being loaded now
+- [#28] Default CSS Styles and Whitelabeling CSS Styles are being loaded now
     - similarly to the already existing warp-menu script and styles
 
 ## [v1.6.4-4] - 2023-10-27
