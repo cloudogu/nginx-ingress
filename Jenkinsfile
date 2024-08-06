@@ -12,7 +12,7 @@ gitflow = new GitFlow(this, git)
 github = new GitHub(this, git)
 changelog = new Changelog(this)
 Docker docker = new Docker(this)
-goVersion = "1.20"
+goVersion = "1.22.5"
 
 // Configuration of repository
 repositoryOwner = "cloudogu"
