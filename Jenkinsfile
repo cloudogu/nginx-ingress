@@ -1,5 +1,5 @@
 #!groovy
-@Library(['github.com/cloudogu/dogu-build-lib@v2.1.0', 'github.com/cloudogu/ces-build-lib@1.65.0'])
+@Library(['github.com/cloudogu/dogu-build-lib@v2.3.1', 'github.com/cloudogu/ces-build-lib@2.2.1'])
 import com.cloudogu.ces.cesbuildlib.*
 import com.cloudogu.ces.dogubuildlib.*
 import groovy.json.JsonBuilder
@@ -12,7 +12,7 @@ gitflow = new GitFlow(this, git)
 github = new GitHub(this, git)
 changelog = new Changelog(this)
 Docker docker = new Docker(this)
-goVersion = "1.18"
+goVersion = "1.22.5"
 
 // Configuration of repository
 repositoryOwner = "cloudogu"
@@ -30,7 +30,8 @@ node('docker') {
         }
 
         stage('Lint') {
-            lintDockerfile()
+            Dockerfile dockerfile = new Dockerfile(this)
+            dockerfile.lintWithConfig()
         }
 
         stage('Check Markdown Links') {
@@ -46,16 +47,16 @@ node('docker') {
             docker.image("golang:${goVersion}")
                     .mountJenkinsUser()
                     .inside("--volume ${WORKSPACE}:/workdir -w /workdir") {
-                        make 'k8s-create-temporary-resource'
+                        make 'create-dogu-resource'
                     }
-            archiveArtifacts 'target/make/k8s/*.yaml'
+            archiveArtifacts 'target/k8s/*.yaml'
         }
 
         K3d k3d = new K3d(this, "${WORKSPACE}", "${WORKSPACE}/k3d", env.PATH)
 
         try {
             String doguVersion = getDoguVersion(false)
-            GString sourceDeploymentYaml = "target/make/k8s/${repositoryName}_${doguVersion}.yaml"
+            GString sourceDeploymentYaml = "target/k8s/${repositoryName}.yaml"
 
             stage('Set up k3d cluster') {
                 k3d.startK3d()
@@ -68,8 +69,8 @@ node('docker') {
             }
 
             stage('Setup') {
-                k3d.setup("v0.11.1", [
-                        dependencies: ["official/postfix"],
+                k3d.setup("1.0.1", [
+                        dependencies: ["k8s/nginx-ingress"],
                         defaultDogu : ""
                 ])
             }

@@ -1,0 +1,1 @@
+trustedRegistries: ["registry.cloudogu.com", "gcr.io", "docker.io", "registry.k8s.io"]
