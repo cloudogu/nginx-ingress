@@ -6,6 +6,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
 ### Added
 - [#28] Default CSS Styles and Whitelabeling CSS Styles are being loaded now
     - similarly to the already existing warp-menu script and styles
