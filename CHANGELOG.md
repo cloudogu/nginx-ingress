@@ -7,8 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [v1.6.4-5] - 2024-08-06
+### Changed
+- [#32] Include whitelabeling-styles in html-<head> instead of html-<body> 
 
+## [v1.6.4-5] - 2024-08-06
 ### Added
 - [#28] Default CSS Styles and Whitelabeling CSS Styles are being loaded now
     - similarly to the already existing warp-menu script and styles
