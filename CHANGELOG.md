@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v1.11.1-1] - 2024-08-14
+- [#30] Update ingress-nginx to 1.11.1
+
 ## [v1.6.4-6] - 2024-08-13
 ### Changed
 - [#32] Include whitelabeling-styles in html-<head> instead of html-<body> 
