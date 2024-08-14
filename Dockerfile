@@ -1,4 +1,4 @@
-FROM registry.k8s.io/ingress-nginx/controller:v1.6.4
+FROM registry.k8s.io/ingress-nginx/controller:v1.11.1
 
 LABEL maintainer="hello@cloudogu.com" \
       NAME="k8s-testing/nginx-ingress" \
