@@ -1,5 +1,5 @@
 #!groovy
-@Library(['github.com/cloudogu/dogu-build-lib@v2.3.1', 'github.com/cloudogu/ces-build-lib@2.2.1'])
+@Library(['github.com/cloudogu/dogu-build-lib@v2.3.1', 'github.com/cloudogu/ces-build-lib@2.3.0'])
 import com.cloudogu.ces.cesbuildlib.*
 import com.cloudogu.ces.dogubuildlib.*
 import groovy.json.JsonBuilder
@@ -69,10 +69,13 @@ node('docker') {
             }
 
             stage('Setup') {
-                k3d.setup("1.0.1", [
-                        dependencies: ["k8s/nginx-ingress"],
-                        defaultDogu : ""
+                k3d.configureComponents([
+                        // TODO Delete blueprint-operator and crd null values if the component runs in multinode.
+                        "k8s-blueprint-operator": null,
+                        "k8s-blueprint-operator-crd": null,
                 ])
+                // TODO Delete dependencies and use default if the usermgt dogu runs in multinode.
+                k3d.setup("2.0.1", ["dependencies": ["official/ldap", "official/cas", "k8s/nginx-ingress", "k8s/nginx-static", "official/postfix"], defaultDogu : ""])
             }
 
             stage('Deploy Dogu') {
@@ -83,11 +86,11 @@ node('docker') {
                 k3d.waitForDeploymentRollout(repositoryName, 300, 5)
             }
 
-            stage('Test Nginx with PlantUML Deployment') {
-                k3d.applyDoguResource("nginx-static", "k8s", "1.23.1-2")
-                k3d.applyDoguResource("plantuml", "official", "2022.4-1")
-                testPlantUmlAccess(k3d)
-            }
+            // TODO Activate CI test if the plantuml dogu works in multinode.
+//            stage('Test Nginx with PlantUML Deployment') {
+//                k3d.applyDoguResource("plantuml", "official", "2022.4-1")
+//                testPlantUmlAccess(k3d)
+//            }
 
             stageAutomaticRelease()
         }
