@@ -86,10 +86,11 @@ node('docker') {
                 k3d.waitForDeploymentRollout(repositoryName, 300, 5)
             }
 
-            stage('Test Nginx with PlantUML Deployment') {
-                k3d.applyDoguResource("plantuml", "official", "2022.4-1")
-                testPlantUmlAccess(k3d)
-            }
+            // TODO Activate CI test if the plantuml dogu works in multinode.
+//            stage('Test Nginx with PlantUML Deployment') {
+//                k3d.applyDoguResource("plantuml", "official", "2022.4-1")
+//                testPlantUmlAccess(k3d)
+//            }
 
             stageAutomaticRelease()
         }
