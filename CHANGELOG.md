@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Fixed
+- [#38] Fix showing the warp-menu in all dogus
+  - The problem only occurred for dogus which send gzipped-responses
+  - This is fixed by adding a `Accept-Encoding: "identity"`-header to the proxy-request
+  - The response is then gzipped by the nginx
 
 ## [v1.11.1-3] - 2024-09-18
 ### Changed
