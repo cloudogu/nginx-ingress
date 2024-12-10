@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v1.11.1-4] - 2024-12-10
+### Fixed
+- [#38] Fix showing the warp-menu in all dogus
+  - The problem only occurred for dogus which send gzipped-responses
+  - This is fixed by adding a `Accept-Encoding: "identity"`-header to the proxy-request
+  - The response is then gzipped by the nginx
+
 ## [v1.11.1-3] - 2024-09-18
 ### Changed
 - Relicense to AGPL-3.0-only
