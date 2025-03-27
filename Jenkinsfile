@@ -1,8 +1,7 @@
 #!groovy
-@Library(['github.com/cloudogu/dogu-build-lib@v2.6.0', 'github.com/cloudogu/ces-build-lib@3.1.0'])
+@Library(['github.com/cloudogu/dogu-build-lib@v3.1.0', 'github.com/cloudogu/ces-build-lib@4.1.1'])
 import com.cloudogu.ces.cesbuildlib.*
 import com.cloudogu.ces.dogubuildlib.*
-import groovy.json.JsonBuilder
 
 // Creating necessary git objects
 git = new Git(this, "cesmarvin")
@@ -69,13 +68,7 @@ node('docker') {
             }
 
             stage('Setup') {
-                k3d.configureComponents([
-                        // TODO Delete blueprint-operator and crd null values if the component runs in multinode.
-                        "k8s-blueprint-operator": null,
-                        "k8s-blueprint-operator-crd": null,
-                ])
-                // TODO Delete dependencies and use default if the usermgt dogu runs in multinode.
-                k3d.setup("3.2.0", ["dependencies": ["official/ldap", "official/cas", "k8s/nginx-ingress", "k8s/nginx-static", "official/postfix"], defaultDogu : ""])
+                k3d.setup("3.4.1", [additionalDependencies: ["official/postgresql"], defaultDogu : ""])
             }
 
             stage('Deploy Dogu') {
@@ -86,17 +79,25 @@ node('docker') {
                 k3d.waitForDeploymentRollout(repositoryName, 300, 5)
             }
 
-            // TODO Activate CI test if the plantuml dogu works in multinode.
-//            stage('Test Nginx with PlantUML Deployment') {
-//                k3d.applyDoguResource("plantuml", "official", "2022.4-1")
-//                testPlantUmlAccess(k3d)
-//            }
+            stage('Test Nginx with PlantUML Deployment') {
+                k3d.applyDoguResource("plantuml", "official", "2025.0-2")
+                testPlantUmlAccess(k3d)
+            }
+
+            stage('Trivy scan') {
+                Trivy trivy = new Trivy(this)
+                // We do not build the dogu in the single node ecosystem, therefore we just use scanImage here with the build from the k3s step.
+                trivy.scanImage("${namespace}/${repositoryName}:${doguVersion}", params.TrivySeverityLevels, params.TrivyStrategy)
+                trivy.saveFormattedTrivyReport(TrivyScanFormat.TABLE)
+                trivy.saveFormattedTrivyReport(TrivyScanFormat.JSON)
+                trivy.saveFormattedTrivyReport(TrivyScanFormat.HTML)
+            }
 
             stageAutomaticRelease()
         }
         catch(Exception e) {
             k3d.collectAndArchiveLogs()
-            throw e
+            throw e as java.lang.Throwable
         }
         finally {
             stage('Remove k3d cluster') {
