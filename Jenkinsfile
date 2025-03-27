@@ -1,5 +1,5 @@
 #!groovy
-@Library(['github.com/cloudogu/dogu-build-lib@v3.1.0', 'github.com/cloudogu/ces-build-lib@4.1.1'])
+@Library(['github.com/cloudogu/dogu-build-lib@v3.1.0', 'github.com/cloudogu/ces-build-lib@5b2415d9a6adfbc32e28d2df6e03035449fd8edb'])
 import com.cloudogu.ces.cesbuildlib.*
 import com.cloudogu.ces.dogubuildlib.*
 
@@ -23,6 +23,17 @@ productionReleaseBranch = "main"
 
 node('docker') {
     timestamps {
+        properties([
+                // Keep only the last x builds to preserve space
+                buildDiscarder(logRotator(numToKeepStr: '10')),
+                // Don't run concurrent builds for a branch, because they use the same workspace directory
+                disableConcurrentBuilds(),
+                parameters([
+                        choice(name: 'TrivySeverityLevels', choices: [TrivySeverityLevel.CRITICAL, TrivySeverityLevel.HIGH_AND_ABOVE, TrivySeverityLevel.MEDIUM_AND_ABOVE, TrivySeverityLevel.ALL], description: 'The levels to scan with trivy'),
+                        choice(name: 'TrivyStrategy', choices: [TrivyScanStrategy.UNSTABLE, TrivyScanStrategy.FAIL, TrivyScanStrategy.IGNORE], description: 'Define whether the build should be unstable, fail or whether the error should be ignored if any vulnerability was found.'),
+                ])
+        ])
+
         stage('Checkout') {
             checkout scm
             make 'clean'
@@ -86,6 +97,7 @@ node('docker') {
 
             stage('Trivy scan') {
                 Trivy trivy = new Trivy(this)
+                String namespace = getDoguNamespace()
                 // We do not build the dogu in the single node ecosystem, therefore we just use scanImage here with the build from the k3s step.
                 trivy.scanImage("${namespace}/${repositoryName}:${doguVersion}", params.TrivySeverityLevels, params.TrivyStrategy)
                 trivy.saveFormattedTrivyReport(TrivyScanFormat.TABLE)
@@ -125,7 +137,7 @@ void testPlantUmlAccess(K3d k3d) {
             returnStdout: true
     )
 
-    if (!plantUml.contains("<title>PlantUMLServer</title>")) {
+    if (!plantUml.contains("<title>PlantUML Server</title>")) {
         sh "echo PlantUML does not seem to be available. Fail pipeline..."
         sh "exit 1"
     }
