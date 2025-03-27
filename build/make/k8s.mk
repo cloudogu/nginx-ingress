@@ -36,11 +36,11 @@ K3S_LOCAL_REGISTRY_PORT?=30099
 
 # The URL of the container-registry to use. Defaults to the registry of the local-cluster.
 # If RUNTIME_ENV is "remote" it is "registry.cloudogu.com/testing"
-CES_REGISTRY_HOST?="${K3S_CLUSTER_FQDN}:${K3S_LOCAL_REGISTRY_PORT}"
+CES_REGISTRY_HOST?=${K3S_CLUSTER_FQDN}:${K3S_LOCAL_REGISTRY_PORT}
 CES_REGISTRY_NAMESPACE ?=
 ifeq (${RUNTIME_ENV}, remote)
-	CES_REGISTRY_HOST="registry.cloudogu.com"
-	CES_REGISTRY_NAMESPACE="/testing"
+	CES_REGISTRY_HOST=registry.cloudogu.com
+	CES_REGISTRY_NAMESPACE=/testing
 endif
 $(info CES_REGISTRY_HOST=$(CES_REGISTRY_HOST))
 
@@ -138,7 +138,7 @@ ${K8S_RESOURCE_TEMP_FOLDER}:
 ##@ K8s - Docker
 
 .PHONY: docker-build
-docker-build: check-docker-credentials check-k8s-image-env-var ## Builds the docker image of the K8s app.
+docker-build: check-docker-credentials check-k8s-image-env-var ${BINARY_YQ} ## Builds the docker image of the K8s app.
 	@echo "Building docker image $(IMAGE)..."
 	@DOCKER_BUILDKIT=1 docker build . -t $(IMAGE)
 
