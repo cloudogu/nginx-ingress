@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v1.12.1-1] - 2025-04-03
+### Changed
+- Upgrade to nginx-ingress 1.12.1; #41
+- Upgrade to latest ces-build-lib, dogu-build-lib and Makefiles
+
 ## [v1.11.1-4] - 2024-12-10
 ### Fixed
 - [#38] Fix showing the warp-menu in all dogus
