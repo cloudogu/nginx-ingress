@@ -1,8 +1,7 @@
 #!groovy
-@Library(['github.com/cloudogu/dogu-build-lib@v2.6.0', 'github.com/cloudogu/ces-build-lib@3.1.0'])
+@Library(['github.com/cloudogu/dogu-build-lib@v3.1.0', 'github.com/cloudogu/ces-build-lib@4.2.0'])
 import com.cloudogu.ces.cesbuildlib.*
 import com.cloudogu.ces.dogubuildlib.*
-import groovy.json.JsonBuilder
 
 // Creating necessary git objects
 git = new Git(this, "cesmarvin")
@@ -12,7 +11,7 @@ gitflow = new GitFlow(this, git)
 github = new GitHub(this, git)
 changelog = new Changelog(this)
 Docker docker = new Docker(this)
-goVersion = "1.22.5"
+goVersion = "1.24.1"
 
 // Configuration of repository
 repositoryOwner = "cloudogu"
@@ -24,6 +23,17 @@ productionReleaseBranch = "main"
 
 node('docker') {
     timestamps {
+        properties([
+                // Keep only the last x builds to preserve space
+                buildDiscarder(logRotator(numToKeepStr: '10')),
+                // Don't run concurrent builds for a branch, because they use the same workspace directory
+                disableConcurrentBuilds(),
+                parameters([
+                        choice(name: 'TrivySeverityLevels', choices: [TrivySeverityLevel.CRITICAL, TrivySeverityLevel.HIGH_AND_ABOVE, TrivySeverityLevel.MEDIUM_AND_ABOVE, TrivySeverityLevel.ALL], description: 'The levels to scan with trivy'),
+                        choice(name: 'TrivyStrategy', choices: [TrivyScanStrategy.UNSTABLE, TrivyScanStrategy.FAIL, TrivyScanStrategy.IGNORE], description: 'Define whether the build should be unstable, fail or whether the error should be ignored if any vulnerability was found.'),
+                ])
+        ])
+
         stage('Checkout') {
             checkout scm
             make 'clean'
@@ -69,13 +79,7 @@ node('docker') {
             }
 
             stage('Setup') {
-                k3d.configureComponents([
-                        // TODO Delete blueprint-operator and crd null values if the component runs in multinode.
-                        "k8s-blueprint-operator": null,
-                        "k8s-blueprint-operator-crd": null,
-                ])
-                // TODO Delete dependencies and use default if the usermgt dogu runs in multinode.
-                k3d.setup("3.2.0", ["dependencies": ["official/ldap", "official/cas", "k8s/nginx-ingress", "k8s/nginx-static", "official/postfix"], defaultDogu : ""])
+                k3d.setup("3.4.1", [additionalDependencies: ["official/postgresql"], defaultDogu : ""])
             }
 
             stage('Deploy Dogu') {
@@ -86,17 +90,26 @@ node('docker') {
                 k3d.waitForDeploymentRollout(repositoryName, 300, 5)
             }
 
-            // TODO Activate CI test if the plantuml dogu works in multinode.
-//            stage('Test Nginx with PlantUML Deployment') {
-//                k3d.applyDoguResource("plantuml", "official", "2022.4-1")
-//                testPlantUmlAccess(k3d)
-//            }
+            stage('Test Nginx with PlantUML Deployment') {
+                k3d.applyDoguResource("plantuml", "official", "2025.0-2")
+                testPlantUmlAccess(k3d)
+            }
+
+            stage('Trivy scan') {
+                Trivy trivy = new Trivy(this)
+                String namespace = getDoguNamespace()
+                // We do not build the dogu in the single node ecosystem, therefore we just use scanImage here with the build from the k3s step.
+                trivy.scanImage("${namespace}/${repositoryName}:${doguVersion}", params.TrivySeverityLevels, params.TrivyStrategy)
+                trivy.saveFormattedTrivyReport(TrivyScanFormat.TABLE)
+                trivy.saveFormattedTrivyReport(TrivyScanFormat.JSON)
+                trivy.saveFormattedTrivyReport(TrivyScanFormat.HTML)
+            }
 
             stageAutomaticRelease()
         }
         catch(Exception e) {
             k3d.collectAndArchiveLogs()
-            throw e
+            throw e as java.lang.Throwable
         }
         finally {
             stage('Remove k3d cluster') {
@@ -124,7 +137,7 @@ void testPlantUmlAccess(K3d k3d) {
             returnStdout: true
     )
 
-    if (!plantUml.contains("<title>PlantUMLServer</title>")) {
+    if (!plantUml.contains("<title>PlantUML Server</title>")) {
         sh "echo PlantUML does not seem to be available. Fail pipeline..."
         sh "exit 1"
     }
