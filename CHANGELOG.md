@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [v1.12.1-1] - 2025-04-03
 ### Changed
 - Upgrade to nginx-ingress 1.12.1; #41
 - Upgrade to latest ces-build-lib, dogu-build-lib and Makefiles
