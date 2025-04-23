@@ -68,7 +68,8 @@
       "Optional": true,
       "Validation": {
         "Type": "BINARY_MEASUREMENT"
-      }
+      },
+      "Default": "139m"
     },
     {
       "Name": "container_config/memory_request",
@@ -77,7 +78,7 @@
       "Validation": {
         "Type": "BINARY_MEASUREMENT"
       },
-      "Default": "100m"
+      "Default": "139m"
     },
     {
       "Name": "container_config/swap_limit",
@@ -96,7 +97,7 @@
       "Name": "container_config/cpu_core_request",
       "Description": "Requests the container's minimal CPU core requirement. Use a positive floating value describing a fraction of 1 CPU core. When you define a value of '0.5', you are requesting half as much CPU time compared to if you asked for '1.0' CPU.",
       "Optional": true,
-      "Default": "0.25"
+      "Default": "0.023"
     },
     {
       "Name": "container_config/storage_limit",
