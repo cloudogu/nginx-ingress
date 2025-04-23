@@ -5,6 +5,7 @@ Im Folgenden finden Sie die Release Notes für das nginx-ingress Dogu.
 Technische Details zu einem Release finden Sie im zugehörigen Changelog.
 
 ## [Unreleased]
+* Die Verwendung von Speicher und CPU wurden für die Kubernetes-Multinode-Umgebung optimiert.
 
 ## [v1.12.1-1] - 2025-04-03
 * Es wurde die Version des Nginx-Controllers auf 1.12.1 aktualisiert.
