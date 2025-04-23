@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v1.12.1-2] - 2025-04-23
+### Changed
 - [#43] Set sensible resource requests and limits
 
 ## [v1.12.1-1] - 2025-04-03
