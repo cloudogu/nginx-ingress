@@ -184,7 +184,8 @@ metadata:
 # see https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/configmap/
 apiVersion: v1
 data:
-  allow-snippet-annotations: "false"
+  allow-snippet-annotations: "true"
+  annotations-risk-level: "Critical"
   proxy-set-headers: "{{ .Namespace }}/nginx-ingress-custom-headers"
 kind: ConfigMap
 metadata:
