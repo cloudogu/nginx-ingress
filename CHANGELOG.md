@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v1.12.1-3] - 2025-08-20
+### Changed
+- [#45] Adjust configuration for snippet annotations to enable redirection of alternative fqdns.
+
 ## [v1.12.1-2] - 2025-04-23
 ### Changed
 - [#43] Set sensible resource requests and limits

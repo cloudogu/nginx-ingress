@@ -6,6 +6,9 @@ Technical details on a release can be found in the corresponding Changelog.
 
 ## [Unreleased]
 
+## [v1.12.1-3] - 2025-08-20
+* Adjusting the configuration to enable redirection to alternative FQDNs.
+
 ## [v1.12.1-2] - 2025-04-23
 * Usage of memory and CPU was optimized for the Kubernetes Mutlinode environment.
 
