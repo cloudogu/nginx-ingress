@@ -5,6 +5,7 @@ Im Folgenden finden Sie die Release Notes für das nginx-ingress Dogu.
 Technische Details zu einem Release finden Sie im zugehörigen Changelog.
 
 ## [Unreleased]
+* Anpassung der Konfiguration um Umleitung zu alternativen FQDNs zu ermöglichen.
 
 ## [v1.12.1-2] - 2025-04-23
 * Die Verwendung von Speicher und CPU wurden für die Kubernetes-Multinode-Umgebung optimiert.
