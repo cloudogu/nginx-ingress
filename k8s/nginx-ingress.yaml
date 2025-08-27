@@ -187,6 +187,7 @@ data:
   allow-snippet-annotations: "true"
   annotations-risk-level: "Critical"
   proxy-set-headers: "{{ .Namespace }}/nginx-ingress-custom-headers"
+  use-forwarded-headers: "true"
 kind: ConfigMap
 metadata:
   name: nginx-ingress

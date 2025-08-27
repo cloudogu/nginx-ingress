@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v1.12.1-4] - 2025-08-27
+### Fixed
+- [#47] add "use-forwarded-headers" option to ensure cas gets the correct request headers
+
 ## [v1.12.1-3] - 2025-08-20
 ### Changed
 - [#45] Adjust configuration for snippet annotations to enable redirection of alternative fqdns.
