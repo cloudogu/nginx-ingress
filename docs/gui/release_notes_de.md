@@ -6,6 +6,9 @@ Technische Details zu einem Release finden Sie im zugehörigen Changelog.
 
 ## [Unreleased]
 
+## [v1.12.1-4] - 2025-08-27
+* Anpassung der Konfiguration um Weiterleitungs-Header durchzureichen.
+
 ## [v1.12.1-3] - 2025-08-20
 * Anpassung der Konfiguration um Umleitung zu alternativen FQDNs zu ermöglichen.
 
