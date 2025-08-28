@@ -188,6 +188,8 @@ data:
   annotations-risk-level: "Critical"
   proxy-set-headers: "{{ .Namespace }}/nginx-ingress-custom-headers"
   use-forwarded-headers: "true"
+  real-ip-header: "X-Forwarded-For"
+  compute-full-forwarded-for: "true"
 kind: ConfigMap
 metadata:
   name: nginx-ingress
