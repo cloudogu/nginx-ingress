@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Fixed
+- [#47] add "real-ip-header" and "compute-full-forwarded-for" options to ensure cas gets the correct request headers
+### Fixed
 - [#47] add "use-forwarded-headers" option to ensure cas gets the correct request headers
 
 ## [v1.12.1-3] - 2025-08-20
